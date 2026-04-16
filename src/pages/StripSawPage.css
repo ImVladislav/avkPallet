@@ -1,0 +1,646 @@
+.stripSawPageRoot {
+  max-width: 920px;
+}
+
+.stripActionOkMsg {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #7cb87c;
+  background: #e8f5e9;
+  color: #1b3d1f;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.stripActionOkText {
+  flex: 1;
+  min-width: 0;
+}
+
+.stripActionOkDismiss {
+  flex-shrink: 0;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #2e6b32;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.stripActionOkDismiss:hover {
+  background: rgba(0, 80, 0, 0.12);
+}
+
+.stripHeroGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 16px 0 20px;
+}
+
+.stripHeroCard {
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 2px solid #c9b8a4;
+}
+
+.stripHeroCardAmber {
+  background: linear-gradient(160deg, #fff8e8 0%, #ffe8c4 100%);
+  border-color: #d4a574;
+}
+
+.stripHeroCardGreen {
+  background: linear-gradient(160deg, #f0faf0 0%, #d8eed8 100%);
+  border-color: #6a9a6a;
+}
+
+.stripHeroCardTitle {
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 0 6px;
+  color: #2a1f14;
+}
+
+.stripHeroCardSub {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  color: #4a3d32;
+  line-height: 1.35;
+}
+
+.stripHeroNum {
+  font-size: 2.35rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #1a120a;
+}
+
+.stripHeroUnit {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #5c4d40;
+}
+
+.stripHeroMeta {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(90, 70, 50, 0.2);
+  font-size: 0.88rem;
+  color: #4a3d32;
+  line-height: 1.4;
+}
+
+.stripHeroMetaSep {
+  margin: 0 6px;
+  opacity: 0.5;
+}
+
+.stripHeroDual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-top: 8px;
+}
+
+@media (max-width: 520px) {
+  .stripHeroDual {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stripHeroDualItem {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(80, 120, 70, 0.25);
+}
+
+.stripHeroDualItemAccent {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #4a7c3f;
+  box-shadow: 0 1px 0 rgba(40, 80, 30, 0.12);
+}
+
+.stripHeroDualLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2d4a22;
+  margin-bottom: 6px;
+}
+
+.stripHeroDualNum {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1a3014;
+}
+
+.stripHeroDualNumLarge {
+  font-size: 2.1rem;
+}
+
+.stripHeroDualUnit {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #4a5c44;
+}
+
+.stripWarn {
+  padding: 10px 12px;
+  background: #fff3e0;
+  border: 1px solid #e8b886;
+  border-radius: 8px;
+}
+
+.stripWidthFailExplain {
+  padding: 12px 14px;
+  background: #fff8f0;
+  border: 1px solid #e0c4a8;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.stripWidthFailLead {
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.stripWidthFailList {
+  margin: 0 0 10px;
+  padding-left: 1.2rem;
+  line-height: 1.45;
+}
+
+.stripWidthFailList li + li {
+  margin-top: 6px;
+}
+
+.stripWidthFailFoot {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.stripWorkflowDone {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 2px solid #5a8f5a;
+  background: linear-gradient(180deg, #f2faf2 0%, #e0f0e0 100%);
+}
+
+.stripWorkflowDone h3 {
+  margin-top: 0;
+}
+
+.stripWorkflowDone > p {
+  margin: 0 0 8px;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  color: #1e3018;
+}
+
+.stripWorkflowDoneExtra {
+  margin-bottom: 0 !important;
+}
+
+.stripDetailsAdvanced {
+  margin: 18px 0;
+  padding: 10px 12px;
+  border: 1px dashed #bfa88f;
+  border-radius: 8px;
+  background: #faf8f5;
+}
+
+.stripDetailsAdvanced summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #4a3520;
+}
+
+.stripAdminTable {
+  margin-top: 10px;
+}
+
+.stripAdminSizeHint {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #5c4d40;
+  line-height: 1.25;
+}
+
+.stripWorkflow {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e0d4c4;
+}
+
+.stripBoardFocusRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+  margin: 10px 0 16px;
+}
+
+.stripBoardFocusRow label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.stripBoardFocusRow select {
+  min-width: 280px;
+  padding: 6px 10px;
+}
+
+.stripExpandWidthsBtn {
+  align-self: center;
+}
+
+.stripRozilHero {
+  margin: 24px 0 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 2px solid #4a6b3d;
+  background: linear-gradient(180deg, #f4faf2 0%, #e2efe0 100%);
+}
+
+.stripRozilHeroLead {
+  margin-top: 0;
+}
+
+.stripRozilSchemeHint {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  color: #2d4a22;
+}
+
+.stripRozilHeroRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 20px;
+}
+
+.stripRozilHeroLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 700;
+  color: #1e3018;
+}
+
+.stripRozilHeroInput {
+  width: 6rem;
+  padding: 10px 12px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 2px solid #5a7d4a;
+}
+
+.stripRozilHeroBtn {
+  padding: 12px 28px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: #3d6b2e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #2a4a1f;
+}
+
+.stripRozilHeroBtn:hover:not(:disabled) {
+  background: #345f28;
+}
+
+.stripRozilHeroBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.stripTaskPick select {
+  min-width: 260px;
+}
+
+.stripSawResult {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #f5f0ff;
+  border: 1px solid #cfc4e8;
+  border-radius: 8px;
+}
+
+.stripSawResult p {
+  margin: 6px 0;
+}
+
+.stripStockTitle {
+  margin: 16px 0 8px;
+  font-size: 1.05rem;
+}
+
+.stripStockTable {
+  margin: 10px 0 16px;
+  border-collapse: collapse;
+  min-width: 280px;
+}
+
+.stripStockTable th,
+.stripStockTable td {
+  border: 1px solid #ccb08e;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.stripStockTable th {
+  background: #f0e6d8;
+}
+
+.stripSawStockHint {
+  max-width: 920px;
+  margin-bottom: 8px;
+}
+
+.stripSawStockTable {
+  min-width: 640px;
+  max-width: 100%;
+  font-size: 0.9rem;
+}
+
+.stripSawRemainderCell,
+.stripSawCutCell {
+  vertical-align: middle;
+}
+
+.stripSawInlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.stripSawSmallInput {
+  width: 4.5rem;
+  padding: 4px 6px;
+  font-size: 0.9rem;
+}
+
+.stripSawMiniBtn {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.stripSawCutBtn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #5a7d4a;
+  color: #fff;
+  border: 1px solid #3d5a32;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.stripSawCutBtn:hover:not(:disabled) {
+  background: #4a6b3d;
+}
+
+.stripSawCutBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.stripRemainderOverrideMark {
+  color: #8b4513;
+  font-weight: 700;
+}
+
+.stripMeasureRow {
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 12px 0;
+}
+
+.stripSameHeightHint {
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  background: #f7f2ea;
+  border-radius: 6px;
+  border: 1px solid #e0d2c4;
+  max-width: 720px;
+}
+
+.stripDemandTable {
+  width: 100%;
+  max-width: 720px;
+  border-collapse: collapse;
+  margin: 12px 0 16px;
+  font-size: 0.9rem;
+}
+
+.stripDemandTable th,
+.stripDemandTable td {
+  border: 1px solid #ccb08e;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.stripDemandTable thead {
+  background: #f0e6d8;
+}
+
+.stripExtraHint {
+  color: #5d4a38;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.stripDiagramPick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+  margin: 10px 0 14px;
+  font-weight: 600;
+}
+
+.stripCutDiagramWrap {
+  max-width: 640px;
+  margin: 12px 0 20px;
+}
+
+.stripCutSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid #c9b8a4;
+  border-radius: 6px;
+  background: #faf8f5;
+}
+
+.stripNoDiagramHint {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #fff4e6;
+  border: 1px solid #e0c4a8;
+  border-radius: 8px;
+  color: #5f3f1e;
+  font-weight: 600;
+}
+
+.stripSegTrack {
+  fill: rgba(200, 190, 175, 0.25);
+  stroke: none;
+}
+
+.stripSegBoard {
+  fill: rgba(115, 78, 48, 0.82);
+  stroke: #3d2814;
+  stroke-width: 0.4;
+}
+
+.stripSegKerf {
+  fill: rgba(90, 60, 40, 0.2);
+  stroke: rgba(60, 40, 25, 0.35);
+  stroke-width: 0.2;
+}
+
+.stripSegWaste {
+  fill: rgba(200, 185, 170, 0.65);
+  stroke: #8a7560;
+  stroke-width: 0.35;
+  stroke-dasharray: 3 2;
+}
+
+.stripSegLabel {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #fff8f0;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #2a1a0d;
+  stroke-width: 0.35px;
+}
+
+.stripCutLegend {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+}
+
+.stripLeg {
+  display: inline-block;
+  padding: 1px 8px;
+  margin-right: 8px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.stripLegBoard {
+  background: rgba(115, 78, 48, 0.35);
+}
+
+.stripLegKerf {
+  background: rgba(90, 60, 40, 0.15);
+}
+
+.stripLegWaste {
+  background: rgba(200, 185, 165, 0.45);
+}
+
+.stripWidthModeRow {
+  margin-bottom: 8px;
+}
+
+.stripWidthFieldset {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #d4c4b0;
+  border-radius: 8px;
+  background: #faf8f4;
+}
+
+.stripWidthFieldset legend {
+  padding: 0 6px;
+  font-weight: 700;
+  color: #3d2814;
+}
+
+.stripWidthRadio {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.stripWidthRadio input[type='radio'] {
+  flex-shrink: 0;
+}
+
+.stripManualWidthInput {
+  max-width: 120px;
+  margin-left: 8px;
+  padding: 4px 8px;
+}
+
+.stripMixedSummary {
+  margin: 10px 0 6px;
+}
+
+.stripKnifePlanBox {
+  margin: 14px 0 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #b8c9d4;
+  background: #f4f8fb;
+}
+
+.stripKnifePlanTitle {
+  margin: 0 0 8px;
+}
+
+.stripKnifeSetupList {
+  margin: 0 0 8px;
+  padding-left: 1.35rem;
+  line-height: 1.5;
+  color: #1e2a33;
+}
+
+.stripKnifePlanRozilNote {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4a5560;
+}
+
+.stripSingleDiagramDetails {
+  margin: 16px 0;
+  padding: 10px 12px;
+  border: 1px dashed #c9b8a4;
+  border-radius: 8px;
+  background: #fffcf7;
+}
+
+.stripSingleDiagramDetails summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #4a3520;
+}

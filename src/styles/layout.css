@@ -1,0 +1,973 @@
+.appLoading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #3e2915;
+  background: #f1f4f9;
+}
+
+.appShell {
+  position: relative;
+  min-height: 100vh;
+}
+
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(20, 14, 10, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+  pointer-events: none;
+}
+
+.drawerBackdrop.isOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 210;
+  width: min(300px, 88vw);
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(180deg, #3d2918, #2a1d12);
+  color: #f5ebe0;
+  box-shadow: 8px 0 28px rgba(0, 0, 0, 0.35);
+  transform: translateX(-100%);
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer.isOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.drawerTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.drawerClose {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.drawerNav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawerLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.drawerLink:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.drawerLink.active {
+  background: rgba(213, 163, 106, 0.35);
+  border-color: rgba(213, 163, 106, 0.55);
+}
+
+.drawerLinkNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.8rem;
+}
+
+.drawerFooter {
+  padding: 12px 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.drawerUser {
+  display: block;
+  line-height: 1.35;
+}
+
+.burgerBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid #b5936b;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f6e5cf, #edd5b2);
+  cursor: pointer;
+}
+
+.burgerBtn:hover {
+  filter: brightness(1.03);
+}
+
+.burgerLine {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+  background: #3e2915;
+}
+
+.appHeaderMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+
+.appHeaderTitles {
+  min-width: 0;
+}
+
+.appHeaderTitles h1 {
+  font-size: clamp(1.15rem, 3vw, 1.65rem);
+  margin: 0 0 4px;
+}
+
+.appHeaderTitles p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.pageCrumb {
+  font-weight: 700;
+  color: #5c3d24;
+}
+
+.layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.appHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.userBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userName {
+  font-size: 0.9rem;
+  color: #5f4027;
+}
+
+h1 {
+  margin-bottom: 8px;
+  color: #2d2116;
+}
+
+header p {
+  color: #6f5338;
+}
+
+.panel {
+  border: 1px solid #d5bea2;
+  border-radius: 12px;
+  padding: 16px;
+  background: linear-gradient(180deg, #fffdf9, #f8f2e9);
+  box-shadow: 0 10px 22px rgba(83, 57, 34, 0.08);
+}
+
+.panelHint {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  color: #6f5338;
+  line-height: 1.45;
+}
+
+.workflowHint {
+  background: #f5efe6;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e3d1bc;
+}
+
+.wasteSummary {
+  margin: 10px 0 16px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  background: #eef4fb;
+  border: 1px solid #c5d4e8;
+  border-radius: 8px;
+  color: #2a3d5c;
+}
+
+.lengthField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+  flex: 1;
+}
+
+.lengthFieldLabel {
+  font-size: 0.9rem;
+  color: #3e2915;
+}
+
+.lengthField input {
+  width: 100%;
+  max-width: 280px;
+}
+
+.unitToggle {
+  display: inline-flex;
+  border: 1px solid #c5a37b;
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.unitToggle button + button {
+  border-left: 1px solid #c5a37b;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+input,
+select {
+  border: 1px solid #c5a37b;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fffaf3;
+}
+
+button {
+  border: 1px solid #6a4a2d;
+  background: linear-gradient(180deg, #8a613d, #6d4a2d);
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: #fff8ee;
+  color: #5f4027;
+  border-color: #a88459;
+}
+
+.unitToggle button {
+  border: none;
+  margin: 0;
+  padding: 6px 14px;
+  background: #fff8ee;
+  color: #5f4027;
+  border-radius: 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.unitToggle button.active {
+  background: linear-gradient(180deg, #8a613d, #6d4a2d);
+  color: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e3d1bc;
+  text-align: left;
+  padding: 8px;
+}
+
+.requestList {
+  margin: 8px 0 16px;
+}
+
+.cutBar {
+  display: flex;
+  min-height: 70px;
+  border: 1px solid #b99568;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #f6efe6;
+}
+
+.scaleRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #62462b;
+}
+
+.piece {
+  background: linear-gradient(135deg, #d5a36a, #b57f43);
+  color: #fff;
+  border-right: 2px solid #f8ecde;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  font-size: 12px;
+}
+
+.piece small,
+.kerfMark small,
+.wasteMark small {
+  font-size: 11px;
+  opacity: 0.95;
+}
+
+.kerfMark {
+  background: #8a1313;
+  color: #fff;
+  border-right: 2px solid #f8ecde;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wasteMark {
+  background: #b7a790;
+  color: #2d2114;
+  border-right: 2px solid #f8ecde;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.axisLine {
+  position: relative;
+  height: 18px;
+  border-bottom: 2px solid #6c5135;
+  margin: 2px 2px 10px;
+}
+
+.cutTick {
+  position: absolute;
+  bottom: -2px;
+  width: 2px;
+  height: 12px;
+  background: #3f2b17;
+}
+
+.crossWrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0 12px;
+}
+
+.crossSvg {
+  width: 400px;
+  height: 400px;
+  max-width: 100%;
+  border: 1px solid #ccb08e;
+  border-radius: 10px;
+  background: #f9f2e7;
+}
+
+.crossCircle {
+  fill: #d6b08c;
+  stroke: #6f4f31;
+  stroke-width: 2;
+}
+
+/* Залишок до полюса після останнього ряду — умовно ще деревина під меншу товщину. */
+.crossPoleRemainder {
+  fill: rgba(180, 140, 95, 0.38);
+  stroke: rgba(90, 62, 38, 0.45);
+  stroke-width: 0.35;
+  pointer-events: none;
+}
+
+.crossRow {
+  fill: rgba(97, 67, 39, 0.42);
+  stroke: #52351d;
+  stroke-width: 0.6;
+}
+
+.crossBoardPiece {
+  fill: rgba(115, 78, 48, 0.78);
+  stroke: #3d2814;
+  stroke-width: 0.45;
+}
+
+.crossBoardPieceSurplus {
+  fill: rgba(180, 150, 120, 0.42);
+  stroke: #7a6a5a;
+  stroke-width: 0.4;
+  stroke-dasharray: 3 2;
+}
+
+.crossSvgSurplusHint {
+  margin-bottom: 6px;
+  max-width: 640px;
+}
+
+.crossKerfSlice {
+  fill: rgba(45, 30, 18, 0.09);
+  stroke: rgba(45, 30, 18, 0.06);
+  stroke-width: 0.1;
+}
+
+.crossOrderWidthGuide {
+  stroke: #1a4d80;
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.crossText {
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #111111;
+  paint-order: stroke;
+  stroke: #fff7ea;
+  stroke-width: 2.2px;
+}
+
+.crossInfo {
+  max-width: 520px;
+}
+
+.crossSizeList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.bandCutPanel {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid #c4a574;
+  border-radius: 8px;
+  background: #fff9ef;
+}
+
+.bandCutTitle {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.bandCutCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+.bandCutQtyInput {
+  width: 4.5rem;
+  padding: 4px 6px;
+}
+
+.bandCutSubmit {
+  margin-top: 4px;
+  padding: 10px 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid #5a3d1f;
+  background: #8b5a2b;
+  color: #fff;
+  cursor: pointer;
+}
+
+.bandCutBtnLines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.bandCutBtnSub {
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.bandCutSubmit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bandCutOk {
+  margin: 8px 0 0;
+  color: #1a5c2e;
+  font-weight: 600;
+}
+
+.bandTableToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.bandTableToolbarHint {
+  flex: 1;
+  min-width: 200px;
+}
+
+.bandTableToolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.bandCalcOpenBtn,
+.bandHideDoneBtn {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.bandAllThTable tbody tr.bandRowComplete {
+  background: #e8f5e9;
+}
+
+.bandAllThTable tbody tr.bandRowComplete td {
+  border-color: #c8e6c9;
+}
+
+.bandRowCompleteBadge {
+  color: #2e7d32;
+  font-weight: 800;
+  font-size: 0.95em;
+}
+
+.bandDoneStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  max-width: 14rem;
+}
+
+.bandDoneForCloseHint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #33691e;
+  line-height: 1.2;
+}
+
+.bandTableEmptyRow {
+  text-align: center;
+  color: #4a3520;
+  font-size: 0.88rem;
+  padding: 16px 12px !important;
+  background: #f5efe6;
+}
+
+.bandCalcModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(21, 33, 58, 0.45);
+}
+
+.bandCalcModal {
+  max-width: 920px;
+  width: 100%;
+  max-height: min(90vh, 720px);
+  overflow: auto;
+  padding: 18px 20px 20px;
+  border-radius: 12px;
+  border: 1px solid #c4a574;
+  background: #fffdf8;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.2);
+}
+
+.bandCalcModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bandCalcModalHeader h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.bandCalcIntro,
+.bandCalcExample {
+  margin: 10px 0;
+}
+
+.bandCalcModalTableWrap {
+  overflow-x: auto;
+  margin: 12px 0 0;
+}
+
+.bandCalcModalTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.bandCalcModalTable th,
+.bandCalcModalTable td {
+  border: 1px solid #d8c4a8;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.bandCalcModalTable th {
+  background: #f5efe6;
+  font-weight: 700;
+}
+
+.bandCalcFootnote {
+  margin-top: 14px;
+}
+
+.bandCalcLenSpan {
+  white-space: normal;
+}
+
+.bandTaskRow {
+  margin-bottom: 8px;
+}
+
+.bandTaskSelect {
+  flex: 1;
+  min-width: 240px;
+}
+
+.bandTaskSelect select {
+  min-width: 280px;
+}
+
+.bandTaskSummary {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  background: #f5efe6;
+  border-radius: 8px;
+  border: 1px solid #e3d1bc;
+}
+
+.bandTaskAlong {
+  font-weight: 400;
+}
+
+.requestListHead {
+  list-style: none;
+  margin-left: -18px;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.bandAllThTitle {
+  margin-top: 20px;
+  font-size: 1.1rem;
+}
+
+.bandAllThTableWrap {
+  overflow-x: auto;
+  margin: 10px 0 14px;
+}
+
+.bandAllThTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.bandAllThTable th,
+.bandAllThTable td {
+  border: 1px solid #e3d1bc;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.bandAllThTable thead {
+  background: #f0e8dc;
+}
+
+.bandAlongLogTh {
+  min-width: 9.5rem;
+}
+
+.bandAlongLogCell {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.bandAlongLogMuted {
+  color: #6b5d4f;
+  font-style: italic;
+}
+
+.bandDraftPiecesHint {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #5d4a38;
+}
+
+.bandStatusOk {
+  color: #1b5e20;
+  font-weight: 600;
+}
+
+.bandStatusDone {
+  color: #33691e;
+  font-weight: 700;
+}
+
+.bandStatusBad {
+  color: #8a1313;
+  font-size: 0.82rem;
+}
+
+.bandPhysicalOrder {
+  margin-top: 10px;
+}
+
+.bandPhysicalOrderNote {
+  font-weight: 400;
+}
+
+.bandCrossFitRow {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 20px;
+  margin: 10px 0 6px;
+}
+
+.bandCrossFitLegend {
+  font-weight: 700;
+  color: #4a3520;
+  margin-right: 4px;
+}
+
+.bandCrossFitOption {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 340px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.bandCrossFitOption input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.bandCrossAndRuler {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 18px 24px;
+  margin-top: 8px;
+}
+
+.bandResawRuler {
+  flex: 1 1 280px;
+  max-width: 420px;
+  padding: 12px 14px;
+  background: #faf6f0;
+  border: 1px solid #e3d1bc;
+  border-radius: 10px;
+}
+
+.bandResawRulerTitle {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: #3d2814;
+}
+
+.bandResawRulerHint {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+}
+
+.bandResawRulerField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+}
+
+.bandResawRulerField input {
+  max-width: 140px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #c9b8a4;
+}
+
+.bandResawRulerTableWrap {
+  overflow-x: auto;
+}
+
+.bandResawRulerTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.bandResawRulerTable th,
+.bandResawRulerTable td {
+  border: 1px solid #e3d1bc;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.bandResawRulerTable thead {
+  background: #f0e8dc;
+}
+
+.bandThChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 8px;
+}
+
+.bandThChipsLabel {
+  font-weight: 600;
+}
+
+.bandThChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bandThChip {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #a88459;
+  background: #fff8ee;
+  cursor: pointer;
+  font: inherit;
+  color: #5f4027;
+}
+
+.bandThChip.active {
+  background: linear-gradient(180deg, #8a613d, #6d4a2d);
+  color: #fff;
+  border-color: #5c3d24;
+}
+
+.bandThChip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

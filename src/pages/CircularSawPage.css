@@ -1,0 +1,472 @@
+.circularSawPage {
+  max-width: 920px;
+}
+
+.circularHero {
+  margin-bottom: 18px;
+}
+
+.circularHero h2 {
+  margin: 0 0 10px;
+}
+
+.circularHeroLead {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #3a3228;
+}
+
+.circularCard {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #d4c4b0;
+  background: #fffdf9;
+}
+
+.circularCardHighlight {
+  border-color: #6a8fa8;
+  background: linear-gradient(165deg, #f4f9fc 0%, #e8f2f8 100%);
+}
+
+.circularCardTitle {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #2a1f14;
+}
+
+.circularCardHint {
+  margin: 0 0 12px;
+}
+
+.circularField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.circularField:last-child {
+  margin-bottom: 0;
+}
+
+.circularFieldLabel {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #4a3520;
+}
+
+.circularFieldHint {
+  font-size: 0.82rem;
+  color: #6a5d4a;
+}
+
+.circularField input,
+.circularField select {
+  max-width: 280px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #b8a894;
+  font-size: 1rem;
+}
+
+.circularInputLg {
+  max-width: 200px !important;
+  font-weight: 600;
+}
+
+.circularTwoCol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 20px;
+  align-items: start;
+}
+
+.circularBoardsIntro {
+  margin: 14px 0 8px;
+}
+
+.circularBoardsWarn {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff8e6;
+  border: 1px solid #e0c080;
+}
+
+.circularBoardsTableWrap {
+  margin-top: 8px;
+  max-height: min(420px, 55vh);
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid #c9b8a4;
+  background: #fff;
+}
+
+.circularBoardsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.circularBoardsTable th,
+.circularBoardsTable td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #ebe3d8;
+  vertical-align: middle;
+}
+
+.circularBoardsTable th {
+  position: sticky;
+  top: 0;
+  background: #efe6d8;
+  font-weight: 800;
+  color: #3a2e22;
+  z-index: 1;
+}
+
+.circularBoardsTable tbody tr:hover {
+  background: #faf6f0;
+}
+
+.circularBoardsTable td:first-child,
+.circularBoardsTable th:first-child {
+  text-align: center;
+  width: 3rem;
+}
+
+.circularBoardToPlanBtn {
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #5a7a9a;
+  background: #e8f0f8;
+  color: #1e3a52;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.circularBoardToPlanBtn:hover {
+  background: #d4e4f4;
+}
+
+.circularBoardsStripNote {
+  font-size: 0.78rem;
+  color: #6a5d4a;
+  font-weight: 500;
+}
+
+.circularBoardsNoLen {
+  color: #9a9088;
+  font-size: 0.9rem;
+}
+
+.circularSequentialSection {
+  margin: 20px 0 8px;
+}
+
+.circularSequentialTitle {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e3a52;
+}
+
+.circularPerBoardBlock {
+  margin-bottom: 22px;
+}
+
+.circularPerBoardBlock:last-child {
+  margin-bottom: 0;
+}
+
+.circularCardPerBoard {
+  border-left: 4px solid #4a6fa5;
+}
+
+.circularPerBoardMeta {
+  margin-top: 0;
+}
+
+.circularManualRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.circularFieldCompact {
+  margin-bottom: 0;
+}
+
+.circularFieldCompact input {
+  max-width: 140px;
+}
+
+.circularManualActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.circularBtnPrimary {
+  font-weight: 700;
+}
+
+.circularTaskPill {
+  margin: 8px 0 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #eef6ff;
+  border: 1px solid #a8c0d8;
+  font-size: 0.95rem;
+}
+
+.circularTaskPillMeta {
+  font-weight: 500;
+  color: #3d4f5f;
+}
+
+.circularDemandList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.circularDemandItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: #f5f0e8;
+  border: 1px solid #e0d5c8;
+}
+
+.circularDemandDims {
+  min-width: 100px;
+}
+
+.circularDemandQty {
+  color: #4a3520;
+}
+
+.circularDemandRemove {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: #e8ddd0;
+  color: #5c4030;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.circularDemandRemove:hover {
+  background: #dccfbf;
+}
+
+.circularDemandTotal {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+.circularWarn {
+  margin: 12px 0;
+}
+
+.circularSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px 16px;
+  margin: 0 0 14px;
+}
+
+.circularSummaryGrid dt {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5a6570;
+}
+
+.circularSummaryGrid dd {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+}
+
+.circularSubheading {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #2a3d4a;
+}
+
+.circularPiecesBreakdownList {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+}
+
+.circularBarHint,
+.circularTableHint {
+  margin-top: 0;
+}
+
+.circularScaleRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #5a5348;
+  margin-bottom: 6px;
+}
+
+.circularCutBar {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #8a7a68;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.circularSegPiece,
+.circularSegKerf,
+.circularSegWaste {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 2px;
+  padding: 4px 2px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.circularSegPiece {
+  background: linear-gradient(180deg, #5b8fc7 0%, #3d6fa0 100%);
+  color: #fff;
+}
+
+.circularSegKerf {
+  background: linear-gradient(180deg, #c75b5b 0%, #a04040 100%);
+  color: #fff;
+  font-weight: 700;
+}
+
+.circularSegWaste {
+  background: linear-gradient(180deg, #b0b0b0 0%, #8a8a8a 100%);
+  color: #1a1a1a;
+}
+
+.circularSegLabel {
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.circularSegMm {
+  font-size: 0.72rem;
+  opacity: 0.95;
+}
+
+.circularLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-top: 10px;
+  font-size: 0.88rem;
+  color: #4a3520;
+}
+
+.circularLegSwatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.circularLegPiece {
+  background: #4a7eb8;
+}
+
+.circularLegKerf {
+  background: #b04545;
+}
+
+.circularLegWaste {
+  background: #9a9a9a;
+}
+
+.circularTableWrap {
+  overflow-x: auto;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #c9b8a4;
+}
+
+.circularCutTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  background: #fff;
+}
+
+.circularCutTable th,
+.circularCutTable td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e8dfd2;
+}
+
+.circularCutTable th {
+  background: #efe6d8;
+  font-weight: 800;
+  color: #3a2e22;
+  white-space: nowrap;
+}
+
+.circularCutTable tbody tr:hover {
+  background: #faf6f0;
+}
+
+.circularCutTable td:first-child,
+.circularCutTable th:first-child {
+  text-align: center;
+  width: 4rem;
+}
+
+@media (max-width: 640px) {
+  .circularCutTable th,
+  .circularCutTable td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+}
+
+.circularResult {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #f0f7ed;
+  border: 1px solid #c8dcc0;
+  border-radius: 8px;
+}
+
+.circularResult p {
+  margin: 6px 0;
+}
