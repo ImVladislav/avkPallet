@@ -43,6 +43,13 @@ export default defineConfig([
 ])
 ```
 
+## Backend URL
+
+Vite reads `VITE_API_BASE_URL` from `.env.local` (or other `.env.*` files).
+Set it to your backend host, for example: `http://127.0.0.1:3001`.
+
+The frontend calls endpoints like `/api/...`, so `VITE_API_BASE_URL` should point to the backend base (scheme + host + port).
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
