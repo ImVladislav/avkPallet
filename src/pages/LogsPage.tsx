@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
 import {
   deleteRoundwoodStockItem,
   fetchRoundwoodState,
@@ -36,6 +37,14 @@ type LabelSuccessInfo = {
   lengthMm: number
 }
 
+type BarcodeDetectorLike = {
+  detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue?: string }>>
+}
+
+type BarcodeDetectorConstructorLike = new (options?: {
+  formats?: string[]
+}) => BarcodeDetectorLike
+
 function msUntilCancelDeadline(createdAt: string, nowMs: number): number {
   const start = new Date(createdAt).getTime()
   if (!Number.isFinite(start)) return 0
@@ -57,9 +66,18 @@ export function LogsPage() {
   )
   const [labelNumberInput, setLabelNumberInput] = useState('')
   const [labelSuccessInfo, setLabelSuccessInfo] = useState<LabelSuccessInfo | null>(null)
+  const [scannerOpen, setScannerOpen] = useState(false)
+  const [scannerBusy, setScannerBusy] = useState(false)
+  const [scannerError, setScannerError] = useState<string | null>(null)
   const seq = useRef(0)
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const scannerVideoRef = useRef<HTMLVideoElement | null>(null)
+  const scannerStreamRef = useRef<MediaStream | null>(null)
+  const scannerLoopIdRef = useRef<number | null>(null)
+  const barcodeDetectorRef = useRef<BarcodeDetectorLike | null>(null)
+  const zxingReaderRef = useRef<BrowserMultiFormatReader | null>(null)
+  const zxingControlsRef = useRef<IScannerControls | null>(null)
 
   const canEditStock =
     user?.role === 'sawyer' || user?.role === 'foreman' || user?.role === 'admin'
@@ -125,48 +143,209 @@ export function LogsPage() {
     })()
   }
 
+  const addLogByLabelValue = useCallback(
+    (rawLabelNumber: string) => {
+      const labelNumber = Math.round(Number(rawLabelNumber.trim()))
+      if (!Number.isFinite(labelNumber) || labelNumber <= 0) {
+        setMsg('Вкажіть коректний номер бірки')
+        return
+      }
+      setBusy(true)
+      setMsg(null)
+      setLabelSuccessInfo(null)
+      void (async () => {
+        try {
+          const src = await fetchLabelByNumber(labelNumber)
+          const diameter = Number(src['Диаметр'])
+          const length = Number(src['Длина'])
+          if (
+            !Number.isFinite(diameter) ||
+            diameter <= 0 ||
+            !Number.isFinite(length) ||
+            length <= 0
+          ) {
+            throw new Error('У відповіді бірки немає коректних Диаметр/Длина')
+          }
+          const radiusMm = Math.round(diameter * 10)
+          const lengthMm = Math.round(length * 1000)
+          await receiveRoundwoodLog({
+            // Диаметр у см -> радіус/діаметр-поле складу в мм (як у поточній моделі складу)
+            radiusMm,
+            // Длина у м -> мм
+            lengthMm,
+            id: Date.now(),
+          })
+          await reload()
+          setLabelSuccessInfo({
+            labelNumber,
+            diameter,
+            length,
+            radiusMm,
+            lengthMm,
+          })
+          setMsg('Записано за біркою, список оновлено.')
+        } catch (e) {
+          setMsg(e instanceof Error ? e.message : 'Помилка запису за біркою')
+        } finally {
+          setBusy(false)
+        }
+      })()
+    },
+    [reload],
+  )
+
   const addLogByLabel = () => {
-    const labelNumber = Math.round(Number(labelNumberInput.trim()))
-    if (!Number.isFinite(labelNumber) || labelNumber <= 0) {
-      setMsg('Вкажіть коректний номер бірки')
+    addLogByLabelValue(labelNumberInput)
+  }
+
+  const stopScanner = useCallback(() => {
+    if (scannerLoopIdRef.current != null) {
+      window.cancelAnimationFrame(scannerLoopIdRef.current)
+      scannerLoopIdRef.current = null
+    }
+    if (scannerStreamRef.current) {
+      for (const track of scannerStreamRef.current.getTracks()) track.stop()
+      scannerStreamRef.current = null
+    }
+    if (scannerVideoRef.current) {
+      scannerVideoRef.current.pause()
+      scannerVideoRef.current.srcObject = null
+    }
+    if (zxingControlsRef.current) {
+      zxingControlsRef.current.stop()
+      zxingControlsRef.current = null
+    }
+    if (zxingReaderRef.current) {
+      zxingReaderRef.current = null
+    }
+    setScannerBusy(false)
+  }, [])
+
+  const closeScanner = useCallback(() => {
+    stopScanner()
+    setScannerOpen(false)
+    setScannerError(null)
+  }, [stopScanner])
+
+  const scanFrame = useCallback(() => {
+    const detector = barcodeDetectorRef.current
+    const video = scannerVideoRef.current
+    if (!detector || !video || video.readyState < 2) {
+      scannerLoopIdRef.current = window.requestAnimationFrame(scanFrame)
       return
     }
-    setBusy(true)
-    setMsg(null)
-    setLabelSuccessInfo(null)
-    void (async () => {
-      try {
-        const src = await fetchLabelByNumber(labelNumber)
-        const diameter = Number(src['Диаметр'])
-        const length = Number(src['Длина'])
-        if (!Number.isFinite(diameter) || diameter <= 0 || !Number.isFinite(length) || length <= 0) {
-          throw new Error('У відповіді бірки немає коректних Диаметр/Длина')
+    void detector
+      .detect(video)
+      .then((codes) => {
+        const rawValue = codes[0]?.rawValue?.trim()
+        if (!rawValue) {
+          scannerLoopIdRef.current = window.requestAnimationFrame(scanFrame)
+          return
         }
-        const radiusMm = Math.round(diameter * 10)
-        const lengthMm = Math.round(length * 1000)
-        await receiveRoundwoodLog({
-          // Диаметр у см -> радіус/діаметр-поле складу в мм (як у поточній моделі складу)
-          radiusMm,
-          // Длина у м -> мм
-          lengthMm,
-          id: Date.now(),
+        const match = rawValue.match(/\d+/)
+        if (!match) {
+          setScannerError('Скановано код без числового номера бірки')
+          scannerLoopIdRef.current = window.requestAnimationFrame(scanFrame)
+          return
+        }
+        const scannedNumber = match[0]
+        setLabelNumberInput(scannedNumber)
+        closeScanner()
+        addLogByLabelValue(scannedNumber)
+      })
+      .catch(() => {
+        scannerLoopIdRef.current = window.requestAnimationFrame(scanFrame)
+      })
+  }, [addLogByLabelValue, closeScanner])
+
+  const openScanner = () => {
+    const maybeCtor = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructorLike })
+      .BarcodeDetector
+    barcodeDetectorRef.current = maybeCtor
+      ? new maybeCtor({
+          formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code'],
         })
-        await reload()
-        setLabelSuccessInfo({
-          labelNumber,
-          diameter,
-          length,
-          radiusMm,
-          lengthMm,
-        })
-        setMsg('Записано за біркою, список оновлено.')
-      } catch (e) {
-        setMsg(e instanceof Error ? e.message : 'Помилка запису за біркою')
-      } finally {
-        setBusy(false)
-      }
-    })()
+      : null
+    setScannerOpen(true)
+    setScannerError(null)
+    setScannerBusy(true)
   }
+
+  useEffect(() => stopScanner, [stopScanner])
+
+  useEffect(() => {
+    if (!scannerOpen) return
+
+    let cancelled = false
+    const start = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const video = scannerVideoRef.current
+          if (!video) throw new Error('Не вдалося ініціалізувати відео')
+          const mediaDevices = navigator.mediaDevices
+          if (!mediaDevices?.getUserMedia) {
+            throw new Error(
+              'Камера недоступна в цьому браузері/контексті. Відкрийте сайт через HTTPS або localhost, і надайте доступ до камери.',
+            )
+          }
+          if (barcodeDetectorRef.current) {
+            const stream = await mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'environment' } },
+              audio: false,
+            })
+            if (cancelled) {
+              for (const track of stream.getTracks()) track.stop()
+              return
+            }
+            scannerStreamRef.current = stream
+            video.srcObject = stream
+            await video.play()
+            if (!cancelled) scanFrame()
+          } else {
+            const reader = new BrowserMultiFormatReader()
+            zxingReaderRef.current = reader
+            const controls = await reader.decodeFromConstraints(
+              {
+                video: { facingMode: { ideal: 'environment' } },
+                audio: false,
+              },
+              video,
+              (result) => {
+                const rawValue = result?.getText().trim()
+                if (!rawValue) return
+                const match = rawValue.match(/\d+/)
+                if (!match) {
+                  setScannerError('Скановано код без числового номера бірки')
+                  return
+                }
+                const scannedNumber = match[0]
+                setLabelNumberInput(scannedNumber)
+                closeScanner()
+                addLogByLabelValue(scannedNumber)
+              },
+            )
+            if (cancelled) {
+              controls.stop()
+              return
+            }
+            zxingControlsRef.current = controls
+          }
+        } catch (e) {
+          stopScanner()
+          setScannerError(
+            e instanceof Error ? e.message : 'Не вдалося отримати доступ до камери пристрою',
+          )
+        } finally {
+          setScannerBusy(false)
+        }
+      })()
+    }, 0)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(start)
+    }
+  }, [addLogByLabelValue, closeScanner, scanFrame, scannerOpen, stopScanner])
 
   const onLengthUnitChange = (next: LengthUnit) => {
     const lenMm = parseDisplayValueToMm(lengthInput, lengthUnitState) ?? readDefaultLengthMm()
@@ -263,6 +442,9 @@ export function LogsPage() {
           </label>
           <button type="button" onClick={addLogByLabel} disabled={busy}>
             Записати за біркою
+          </button>
+          <button type="button" className="btnSecondary" onClick={openScanner} disabled={busy}>
+            Сканувати камерою
           </button>
         </div>
         <div className="row" style={{ marginTop: 12 }}>
@@ -427,6 +609,37 @@ export function LogsPage() {
                 <dd>{labelSuccessInfo.lengthMm} мм</dd>
               </div>
             </dl>
+          </div>
+        </div>
+      )}
+      {scannerOpen && (
+        <div className="logsScannerBackdrop" role="presentation" onClick={closeScanner}>
+          <div
+            className="logsScannerModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logsScannerTitle"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="logsScannerHeader">
+              <h3 id="logsScannerTitle">Сканування штрихкоду</h3>
+              <button type="button" className="ghost" onClick={closeScanner} aria-label="Закрити">
+                Закрити
+              </button>
+            </div>
+            <p className="panelHint logsScannerHint">
+              Наведіть камеру на штрихкод бірки. Після розпізнавання запис буде додано автоматично.
+            </p>
+            {!barcodeDetectorRef.current && (
+              <p className="panelHint logsScannerHint">
+                У цьому браузері використовується сумісний режим сканування.
+              </p>
+            )}
+            {scannerError && <p className="birkaMsgErr">{scannerError}</p>}
+            <div className="logsScannerVideoWrap">
+              <video ref={scannerVideoRef} className="logsScannerVideo" playsInline muted />
+              {scannerBusy && <div className="logsScannerOverlay">Підключення до камери…</div>}
+            </div>
           </div>
         </div>
       )}

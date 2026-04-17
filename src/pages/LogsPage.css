@@ -20,15 +20,33 @@
   padding: 14px 16px;
   background: #fff;
   margin-bottom: 16px;
-  max-width: 560px;
+  width: 100%;
+  max-width: 720px;
 }
 
 .logsTableWrap {
   border: 1px solid #c8d4e0;
   border-radius: 10px;
-  overflow: hidden;
+  overflow: auto;
   background: #fff;
   max-width: 900px;
+}
+
+.logsFormCard .row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.logsFormCard .row > label,
+.logsFormCard .row > .lengthField {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.logsFormCard .row > button {
+  flex: 0 0 auto;
 }
 
 .logsTableWrap h3 {
@@ -180,4 +198,133 @@
   margin: 0;
   color: #1f2e3a;
   font-weight: 700;
+}
+
+.logsScannerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(16, 28, 46, 0.52);
+}
+
+.logsScannerModal {
+  width: min(620px, 96vw);
+  border: 1px solid #c8d4e0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+
+.logsScannerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.logsScannerHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1f2e3a;
+}
+
+.logsScannerHint {
+  margin: 0 0 10px;
+}
+
+.logsScannerVideoWrap {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0e1620;
+  border: 1px solid #dbe4ec;
+}
+
+.logsScannerVideo {
+  width: 100%;
+  max-height: 70vh;
+  display: block;
+  object-fit: cover;
+}
+
+.logsScannerOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 22, 32, 0.58);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 1024px) {
+  .logsFormCard {
+    max-width: 100%;
+  }
+
+  .logsTable {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logsPageTitle {
+    font-size: 1.2rem;
+  }
+
+  .logsLead {
+    font-size: 0.84rem;
+    margin-bottom: 12px;
+  }
+
+  .logsFormCard {
+    padding: 12px;
+  }
+
+  .logsFormCard .row {
+    gap: 8px;
+  }
+
+  .logsFormCard .row > label,
+  .logsFormCard .row > .lengthField,
+  .logsFormCard .row > button {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .logsLabelModalBackdrop,
+  .logsScannerBackdrop {
+    padding: 10px;
+  }
+
+  .logsLabelModal,
+  .logsScannerModal {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .logsLabelModalHeader,
+  .logsScannerHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .logsLabelModalList div {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .logsScannerVideo {
+    max-height: 58vh;
+  }
 }
