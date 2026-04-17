@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
 import {
   deleteRoundwoodStockItem,
@@ -73,6 +73,7 @@ export function LogsPage() {
   const [nowTick, setNowTick] = useState(() => Date.now())
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const scannerVideoRef = useRef<HTMLVideoElement | null>(null)
+  const scannerFileInputRef = useRef<HTMLInputElement | null>(null)
   const scannerStreamRef = useRef<MediaStream | null>(null)
   const scannerLoopIdRef = useRef<number | null>(null)
   const barcodeDetectorRef = useRef<BarcodeDetectorLike | null>(null)
@@ -271,6 +272,38 @@ export function LogsPage() {
     setScannerBusy(true)
   }
 
+  const onScanFilePick = () => {
+    scannerFileInputRef.current?.click()
+  }
+
+  const onScanFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setScannerBusy(true)
+    setScannerError(null)
+    const imageUrl = URL.createObjectURL(file)
+    void (async () => {
+      try {
+        const reader = zxingReaderRef.current ?? new BrowserMultiFormatReader()
+        zxingReaderRef.current = reader
+        const result = await reader.decodeFromImageUrl(imageUrl)
+        const rawValue = result.getText().trim()
+        const match = rawValue.match(/\d+/)
+        if (!match) throw new Error('Скановано код без числового номера бірки')
+        const scannedNumber = match[0]
+        setLabelNumberInput(scannedNumber)
+        closeScanner()
+        addLogByLabelValue(scannedNumber)
+      } catch (e) {
+        setScannerError(e instanceof Error ? e.message : 'Не вдалося зчитати штрихкод з фото')
+      } finally {
+        URL.revokeObjectURL(imageUrl)
+        setScannerBusy(false)
+      }
+    })()
+  }
+
   useEffect(() => stopScanner, [stopScanner])
 
   useEffect(() => {
@@ -284,9 +317,10 @@ export function LogsPage() {
           if (!video) throw new Error('Не вдалося ініціалізувати відео')
           const mediaDevices = navigator.mediaDevices
           if (!mediaDevices?.getUserMedia) {
-            throw new Error(
-              'Камера недоступна в цьому браузері/контексті. Відкрийте сайт через HTTPS або localhost, і надайте доступ до камери.',
+            setScannerError(
+              'Камера недоступна в цьому браузері/контексті. Використайте кнопку "Сканувати з фото" або відкрийте сайт через HTTPS/localhost.',
             )
+            return
           }
           if (barcodeDetectorRef.current) {
             const stream = await mediaDevices.getUserMedia({
@@ -630,6 +664,24 @@ export function LogsPage() {
             <p className="panelHint logsScannerHint">
               Наведіть камеру на штрихкод бірки. Після розпізнавання запис буде додано автоматично.
             </p>
+            <div className="logsScannerActions">
+              <button
+                type="button"
+                className="btnSecondary"
+                onClick={onScanFilePick}
+                disabled={scannerBusy}
+              >
+                Сканувати з фото
+              </button>
+              <input
+                ref={scannerFileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={onScanFileChange}
+                className="logsScannerFileInput"
+              />
+            </div>
             {!barcodeDetectorRef.current && (
               <p className="panelHint logsScannerHint">
                 У цьому браузері використовується сумісний режим сканування.

@@ -238,6 +238,16 @@
   margin: 0 0 10px;
 }
 
+.logsScannerActions {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.logsScannerFileInput {
+  display: none;
+}
+
 .logsScannerVideoWrap {
   position: relative;
   border-radius: 10px;
@@ -326,5 +336,9 @@
 
   .logsScannerVideo {
     max-height: 58vh;
+  }
+
+  .logsScannerActions {
+    flex-direction: column;
   }
 }
