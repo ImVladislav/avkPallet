@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>avk-pallet</title>
+    <script>
+      ;(function redirectFromGithubPages404(location) {
+        if (!location.search.startsWith('?/')) return
+        const decoded = location.search
+          .slice(2)
+          .split('&')
+          .map((part) => part.replace(/~and~/g, '&'))
+          .join('?')
+        const nextPath = `${location.pathname.replace(/\/$/, '')}/${decoded}${location.hash}`
+        window.history.replaceState(null, '', nextPath)
+      })(window.location)
+    </script>
   </head>
   <body>
     <div id="root"></div>

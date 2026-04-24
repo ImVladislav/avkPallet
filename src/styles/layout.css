@@ -971,3 +971,47 @@ td {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.usersAccessGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 14px;
+  padding: 8px 0 4px;
+}
+
+.usersAccessItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.9rem;
+  color: #3e2915;
+}
+
+.usersAccessItem input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+button.btnDanger {
+  border-color: #8a1313;
+  background: linear-gradient(180deg, #b71c1c, #8a1313);
+  color: #fff;
+}
+
+button.btnDanger:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+button.btnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.usersRowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}

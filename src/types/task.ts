@@ -2,7 +2,7 @@ import type { buildForemanPlan } from '../helpers/foremanPlan'
 
 export type ForemanPlanResult = ReturnType<typeof buildForemanPlan>
 
-/** Смуги після ленточної — облік для станка 2 (ширина). */
+/** Смуги після стрічкової пили — облік для багатопилу (ширина). */
 export type StripInventoryEntry = {
   thicknessMm: number
   qty: number
@@ -12,7 +12,7 @@ export type StripInventoryEntry = {
   recordedAt: string
 }
 
-/** Облік розпилу по ширині (станок 2): списання смуг + ручний залишок. */
+/** Облік розпилу по ширині (багатопил): списання смуг + ручний залишок. */
 export type StripSawCutEntry = {
   thicknessMm: number
   stripQty: number
@@ -41,9 +41,9 @@ export type WorkTask = {
   kerfCircMm: number
   assignTo: string[]
   plan: ForemanPlanResult
-  /** Накопичені смуги по завданню (передаються на станок 2). */
+  /** Накопичені смуги по завданню (передаються на багатопил). */
   stripInventory?: StripInventoryEntry[]
-  /** Списані смуги на станку 2 та ручний залишок. */
+  /** Списані смуги на багатопилі та ручний залишок. */
   stripSaw?: StripSawState
   status: 'pending' | 'in_progress' | 'done'
   createdAt: string

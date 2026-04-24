@@ -5,13 +5,13 @@ import type { OrderLine } from './parseForemanOrders'
 export type BandThicknessPlan = {
   thicknessMm: number
   qtyNeeded: number
-  /** Смуги (заготовки після ленточної), уже зняті по завданню */
+  /** Смуги (заготовки після стрічкової пили), уже зняті по завданню */
   qtyDone?: number
   rowsAlongDiameter: number
   boardsFromOneCrossSection: number
   /** Скільки повних «торців» колоди (перерізів по довжині) треба, щоб набрати кількість дощок */
   crossSectionsNeeded: number
-  /** Рядів смуг по висоті кола (етап ленточної по торцю) */
+  /** Рядів смуг по висоті кола (етап стрічкової пили по торцю) */
   rowsAlongHeight: number
   /** Чи вміщається хоч одна дошка цієї товщини в торці при даному R */
   feasible?: boolean
@@ -22,7 +22,7 @@ export type BandThicknessPlan = {
 export type CircularThicknessPlan = {
   thicknessMm: number
   qtyNeeded: number
-  /** Готові дошки (бруси) після нарізу поперек смуги на станку 2 */
+  /** Готові дошки (бруси) після нарізу поперек смуги на багатопилі */
   qtyDone?: number
   /** Середня ширина смуги (хорда) по рядах — для оцінки нарізу */
   avgChordMm: number
@@ -138,7 +138,7 @@ export function buildForemanPlan(
   return { band, circular, alongLog: alongLogFromOrders(orders, kerfBandMm) }
 }
 
-/** Перерахунок плану ленточної під фактичний радіус колоди (на екрані розпиловщика). */
+/** Перерахунок плану стрічкової пили під фактичний радіус колоди (на екрані розпиловщика). */
 export function recomputeBandPlanForRadius(
   radiusMm: number,
   kerfBandMm: number,

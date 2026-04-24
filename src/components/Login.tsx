@@ -61,7 +61,7 @@ export function Login() {
           </button>
         </form>
         <p className="loginHint">
-          Тестові акаунти (пароль <b>1</b>): rozpyl (ленточна), cyrkul (циркулярка), zbirka,{' '}
+          Тестові акаунти (пароль <b>1</b>): rozpyl (стрічкова пила), cyrkul (циркулярка), zbirka,{' '}
           <strong>brygadyr</strong> (бригадир, розділ «Завдання» на <code>/tasks</code>), admin
         </p>
       </div>

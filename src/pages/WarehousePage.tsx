@@ -214,9 +214,9 @@ export function WarehousePage() {
             </h2>
             <span
               className="warehouseCardMeta"
-              title="До різу по ширині на ст.2; хорда в торці"
+              title="До різу по ширині на багатопилі; хорда в торці"
             >
-              До ст.2
+              До багатопилу
             </span>
           </div>
           <div className="warehouseCardBody">

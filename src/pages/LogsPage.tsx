@@ -35,6 +35,8 @@ type LabelSuccessInfo = {
   length: number
   radiusMm: number
   lengthMm: number
+  /** Об'єм з бірки (м³), поле API «Объем». */
+  volumeM3?: number
 }
 
 type BarcodeDetectorLike = {
@@ -159,6 +161,9 @@ export function LogsPage() {
           const src = await fetchLabelByNumber(labelNumber)
           const diameter = Number(src['Диаметр'])
           const length = Number(src['Длина'])
+          const volumeRaw = src['Объем']
+          const volumeM3 = volumeRaw != null ? Number(volumeRaw) : NaN
+          const volumeOk = Number.isFinite(volumeM3) && volumeM3 >= 0
           if (
             !Number.isFinite(diameter) ||
             diameter <= 0 ||
@@ -175,6 +180,7 @@ export function LogsPage() {
             // Длина у м -> мм
             lengthMm,
             id: Date.now(),
+            ...(volumeOk ? { volumeM3 } : {}),
           })
           await reload()
           setLabelSuccessInfo({
@@ -183,6 +189,7 @@ export function LogsPage() {
             length,
             radiusMm,
             lengthMm,
+            ...(volumeOk ? { volumeM3 } : {}),
           })
           setMsg('Записано за біркою, список оновлено.')
         } catch (e) {
@@ -634,6 +641,12 @@ export function LogsPage() {
                 <dt>Довжина (з бірки)</dt>
                 <dd>{labelSuccessInfo.length}</dd>
               </div>
+              {labelSuccessInfo.volumeM3 != null && (
+                <div>
+                  <dt>Об'єм (з бірки), м³</dt>
+                  <dd>{labelSuccessInfo.volumeM3.toLocaleString('uk-UA', { maximumFractionDigits: 6 })}</dd>
+                </div>
+              )}
               <div>
                 <dt>Записано у базу (radiusMm)</dt>
                 <dd>{labelSuccessInfo.radiusMm} мм</dd>

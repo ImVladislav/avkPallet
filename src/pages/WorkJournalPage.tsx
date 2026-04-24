@@ -11,7 +11,7 @@ function kindLabel(k: RoundwoodJournalEntry['kind']): string {
     case 'receive_cancelled':
       return 'Скасування прийому (до 5 хв)'
     case 'band_consumed':
-      return 'Розпил ленточної (колода знята)'
+      return 'Розпил стрічкової пили (колода знята)'
     case 'stock_updated':
       return 'Зміна розмірів колоди'
     case 'stock_cleared':
@@ -60,7 +60,7 @@ export function WorkJournalPage() {
     <section className="panel">
       <h2>Журнал робіт (кругляк)</h2>
       <p className="panelHint">
-        Хронологія подій: прийом колод на серверний склад, зміни розмірів, розпил на ленточній
+        Хронологія подій: прийом колод на серверний склад, зміни розмірів, розпил на стрічковій пилі
         (списання колоди), очистка складу бригадиром/адміном. Файл даних на сервері: roundwood.json
         — спільний для всіх користувачів.
       </p>

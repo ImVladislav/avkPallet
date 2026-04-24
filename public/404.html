@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>avk-pallet</title>
+    <script>
+      ;(function redirectToApp(location) {
+        const keepSegments = 1
+        const pathSegments = location.pathname.split('/')
+        const basePath = pathSegments.slice(0, 1 + keepSegments).join('/')
+        const routePath = pathSegments
+          .slice(1 + keepSegments)
+          .join('/')
+          .replace(/&/g, '~and~')
+        const query = location.search ? `&${location.search.slice(1).replace(/&/g, '~and~')}` : ''
+        const target = `${location.protocol}//${location.host}${basePath}/?/${routePath}${query}${location.hash}`
+        location.replace(target)
+      })(window.location)
+    </script>
+  </head>
+  <body></body>
+</html>

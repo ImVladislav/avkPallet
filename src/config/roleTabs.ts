@@ -26,6 +26,7 @@ export const ROLE_TABS: Record<UserRole, readonly string[]> = {
     'warehouse',
     'pallets',
     'boards',
+    'users',
   ],
 }
 

@@ -4,6 +4,8 @@ export type LogItem = {
   radius: number
   length: number
   createdAt: string
+  /** Об'єм з бірки (м³), якщо прийом за біркою. */
+  volumeM3?: number
 }
 
 export type RoundwoodJournalKind =
@@ -21,6 +23,7 @@ export type RoundwoodJournalEntry = {
   logId?: number
   radiusMm?: number
   lengthMm?: number
+  volumeM3?: number
   taskId?: string
   taskTitle?: string
   previousRadiusMm?: number

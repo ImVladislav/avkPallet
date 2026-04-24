@@ -3,7 +3,7 @@ import type { WorkTask } from '../types/task'
 
 export type StripStockTaskRow = {
   thicknessMm: number
-  /** Ширина смуги в торці до нарізу по ширині (хорда), мм — за R завдання та планом ленточної. */
+  /** Ширина смуги в торці до нарізу по ширині (хорда), мм — за R завдання та планом стрічкової пили. */
   undressedStripWidthMm: number | null
   remainder: number
   incoming: number
@@ -33,7 +33,7 @@ function dominantStripWidthFromInventory(task: WorkTask, thicknessMm: number): n
 }
 
 /**
- * Оцінка ширини смуги «як з ленточної» (поперек волокон у торці), до станка 2.
+ * Оцінка ширини смуги «як зі стрічкової пили» (поперек волокон у торці), до багатопилу.
  */
 export function undressedStripWidthMmForTask(task: WorkTask, thicknessMm: number): number | null {
   const th = Math.round(thicknessMm)
@@ -53,7 +53,7 @@ export function undressedStripWidthMmForTask(task: WorkTask, thicknessMm: number
   return null
 }
 
-/** Смуги по завданню: прийшло, спиляно на ст.2, залишок (як на сторінці станка 2). */
+/** Смуги по завданню: прийшло, спиляно на багатопилі, залишок (як на сторінці багатопилу). */
 export function stripStockRowsForTask(task: WorkTask): StripStockTaskRow[] {
   const inv = task.stripInventory ?? []
   const mInv = new Map<number, number>()

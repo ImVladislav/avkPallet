@@ -60,7 +60,7 @@ function readStoredBandCrossFit(): BandCrossFitMode {
   return 'min_waste'
 }
 
-/** Етап 1: ленточна знімає смуги заданої товщини (висота в торці), різ вздовж усієї осі колоди — без нарізки по довжині. */
+/** Етап 1: стрічкова пила знімає смуги заданої товщини (висота в торці), різ вздовж усієї осі колоди — без нарізки по довжині. */
 export function BandSawPage() {
   const { user } = useAuth()
   const [logs, setLogs] = useState<LogItem[]>([])
@@ -163,7 +163,7 @@ export function BandSawPage() {
     return Number(kerf) || 0
   }, [selectedTask, kerf])
 
-  /** План ленточної під радіус завдання або обраної колоди — сортування: мін. перерізи, мін. надлишок. */
+  /** План стрічкової пили під радіус завдання або обраної колоди — сортування: мін. перерізи, мін. надлишок. */
   const bandSortedForLog = useMemo(() => {
     if (!selectedTask?.plan.band.length) return []
     const rMm = selectedLog?.radius ?? selectedTask.radiusMm
@@ -499,7 +499,7 @@ export function BandSawPage() {
         {tasksErr && <p className="birkaMsgErr">{tasksErr}</p>}
         {!tasksLoading && tasksForBand.length === 0 && !tasksErr && (
           <p className="panelHint">
-            Немає завдань з призначенням «ленточна». Бригадир має зберегти завдання з галочкою
+            Немає завдань з призначенням «стрічкова пила». Бригадир має зберегти завдання з галочкою
             розпиловщика.
           </p>
         )}
@@ -536,7 +536,7 @@ export function BandSawPage() {
           </label>
 
           <label>
-            Пропил ленточної (мм)
+            Пропил стрічкової пили (мм)
             <input
               value={selectedTask ? String(selectedTask.kerfBandMm) : kerf}
               onChange={(e) => setKerf(e.target.value)}
@@ -598,7 +598,7 @@ export function BandSawPage() {
           <>
             <div className="bandTableToolbar">
               <p className="panelHint bandTableToolbarHint">
-                Рядки таблиці — <strong>товщина смуги</strong> (ленточна). Колонка «З колоди по довжині» — скільки{' '}
+                Рядки таблиці — <strong>товщина смуги</strong> (стрічкова пила). Колонка «З колоди по довжині» — скільки{' '}
                 <strong>деталей кожної довжини</strong> з замовлення вміщається в{' '}
                 <strong>одну обрану колоду</strong> по осі (нарізка циркуляркою; пропил{' '}
                 {selectedTask.kerfCircMm} мм між заготовками). У тексті замовлення порядок чисел:{' '}
@@ -624,7 +624,7 @@ export function BandSawPage() {
                     onClick={() => setHideCompletedBandRows((v) => !v)}
                     title={
                       hideCompletedBandRows
-                        ? 'Знову показати рядки, по яких норма ленточної вже закрита'
+                        ? 'Знову показати рядки, по яких норма стрічкової пили вже закрита'
                         : 'Приховати виконані позиції з таблиці'
                     }
                   >
@@ -656,8 +656,8 @@ export function BandSawPage() {
                   {bandTableRows.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="bandTableEmptyRow">
-                        Усі позиції за цим завданням уже виконані за нормою ленточної — натисніть «Показати
-                        виконані», щоб знову побачити рядки, або переходьте до закриття на станку 2.
+                        Усі позиції за цим завданням уже виконані за нормою стрічкової пили — натисніть «Показати
+                        виконані», щоб знову побачити рядки, або переходьте до закриття на багатопилі.
                       </td>
                     </tr>
                   ) : null}
@@ -739,14 +739,14 @@ export function BandSawPage() {
                             <div className="bandDoneStatus">
                               <span className="bandStatusDone">Виконано</span>
                               <span className="bandDoneForCloseHint">
-                                дошки готові — закрийте позицію на станку 2
+                                дошки готові — закрийте позицію на багатопилі
                               </span>
                             </div>
                           ) : draftStrips > 0 && previewLeft === 0 ? (
                             <div className="bandDoneStatus">
                               <span className="bandStatusDone">Буде виконано</span>
                               <span className="bandDoneForCloseHint">
-                                після натискання «Передати на станок 2»
+                                після натискання «Передати на багатопил»
                               </span>
                             </div>
                           ) : ok ? (
@@ -887,8 +887,8 @@ export function BandSawPage() {
                         )
                         setBandCutMsg(
                           allDone
-                            ? 'Записано. Усі позиції ленточної за завданням закриті — можна передати в роботу далі.'
-                            : 'Записано. Смуги додані до завдання для станка 2.',
+                            ? 'Записано. Усі позиції стрічкової пили за завданням закриті — можна передати в роботу далі.'
+                            : 'Записано. Смуги додані до завдання для багатопилу.',
                         )
                       }
                     } catch (e) {
@@ -903,7 +903,7 @@ export function BandSawPage() {
                     'Відправка…'
                   ) : (
                     <span className="bandCutBtnLines">
-                      <span>Передати на станок 2</span>
+                      <span>Передати на багатопил</span>
                       <span className="bandCutBtnSub">(колода розпущена)</span>
                     </span>
                   )}

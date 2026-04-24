@@ -1,0 +1,1118 @@
+{
+  "stock": [
+    {
+      "id": 1776283821995,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:21.997Z"
+    },
+    {
+      "id": 1776283822228,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:22.231Z"
+    },
+    {
+      "id": 1776283822858,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:22.862Z"
+    },
+    {
+      "id": 1776283823949,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:23.951Z"
+    },
+    {
+      "id": 1776283824107,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:24.109Z"
+    },
+    {
+      "id": 1776283824240,
+      "radius": 180,
+      "length": 4000,
+      "createdAt": "2026-04-15T20:10:24.243Z"
+    },
+    {
+      "id": 1776447477246,
+      "radius": 240,
+      "length": 4000,
+      "createdAt": "2026-04-17T17:37:57.249Z"
+    },
+    {
+      "id": 1776447532968,
+      "radius": 240,
+      "length": 4000,
+      "createdAt": "2026-04-17T17:38:52.972Z"
+    },
+    {
+      "id": 1776448229659,
+      "radius": 220,
+      "length": 2600,
+      "createdAt": "2026-04-17T17:50:29.663Z"
+    },
+    {
+      "id": 1776448276829,
+      "radius": 220,
+      "length": 2600,
+      "createdAt": "2026-04-17T17:51:16.833Z"
+    }
+  ],
+  "journal": [
+    {
+      "id": "j-1775918606263-kwg6091",
+      "kind": "received",
+      "at": "2026-04-11T14:43:26.263Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775908919372,
+      "radiusMm": 160,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775918606269-oc4j8vh",
+      "kind": "received",
+      "at": "2026-04-11T14:43:26.269Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775908922180,
+      "radiusMm": 170,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775918608847-8c7h82u",
+      "kind": "received",
+      "at": "2026-04-11T14:43:28.847Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918608845,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775918609375-lshhwyf",
+      "kind": "received",
+      "at": "2026-04-11T14:43:29.375Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918609373,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775918612761-9rwykzy",
+      "kind": "received",
+      "at": "2026-04-11T14:43:32.761Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918612758,
+      "radiusMm": 200,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775919367141-8vo83az",
+      "kind": "stock_updated",
+      "at": "2026-04-11T14:56:07.141Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918612758,
+      "radiusMm": 200,
+      "lengthMm": 4000,
+      "previousRadiusMm": 200,
+      "previousLengthMm": 4000
+    },
+    {
+      "id": "j-1775919371874-kzay04f",
+      "kind": "band_consumed",
+      "at": "2026-04-11T14:56:11.874Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918608845,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1775919227060-fmtun2z",
+      "taskTitle": "тов веселка"
+    },
+    {
+      "id": "j-1775919392050-ndumd72",
+      "kind": "band_consumed",
+      "at": "2026-04-11T14:56:32.050Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918609373,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1775919227060-fmtun2z",
+      "taskTitle": "тов веселка"
+    },
+    {
+      "id": "j-1775919409329-483ik70",
+      "kind": "band_consumed",
+      "at": "2026-04-11T14:56:49.329Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775908922180,
+      "radiusMm": 170,
+      "lengthMm": 4000,
+      "taskId": "task-1775919227060-fmtun2z",
+      "taskTitle": "тов веселка"
+    },
+    {
+      "id": "j-1775919438613-evx9qm7",
+      "kind": "band_consumed",
+      "at": "2026-04-11T14:57:18.613Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775918612758,
+      "radiusMm": 200,
+      "lengthMm": 4000,
+      "taskId": "task-1775919227060-fmtun2z",
+      "taskTitle": "тов веселка"
+    },
+    {
+      "id": "j-1775984871952-hksw5cx",
+      "kind": "stock_cleared",
+      "at": "2026-04-12T09:07:51.952Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "clearedCount": 1
+    },
+    {
+      "id": "j-1775984883513-5xavcz4",
+      "kind": "received",
+      "at": "2026-04-12T09:08:03.513Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775984861260,
+      "radiusMm": 120,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775988593989-6gu4u9m",
+      "kind": "stock_cleared",
+      "at": "2026-04-12T10:09:53.989Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "clearedCount": 1
+    },
+    {
+      "id": "j-1775988606183-oxjt482",
+      "kind": "received",
+      "at": "2026-04-12T10:10:06.183Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775988606179,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775991090857-aixxa0o",
+      "kind": "received",
+      "at": "2026-04-12T10:51:30.857Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775991090853,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775994162263-t94z1an",
+      "kind": "received",
+      "at": "2026-04-12T11:42:42.263Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775994162256,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775994173299-q4bjpyp",
+      "kind": "received",
+      "at": "2026-04-12T11:42:53.299Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775994173297,
+      "radiusMm": 200,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775995891018-ggjf5ju",
+      "kind": "received",
+      "at": "2026-04-12T12:11:31.018Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995891014,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775995894968-dmxd4wl",
+      "kind": "received",
+      "at": "2026-04-12T12:11:34.968Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995894966,
+      "radiusMm": 220,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775995899250-4iqrq8t",
+      "kind": "received",
+      "at": "2026-04-12T12:11:39.250Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995899246,
+      "radiusMm": 210,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775995901944-nirzxu9",
+      "kind": "received",
+      "at": "2026-04-12T12:11:41.944Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995901942,
+      "radiusMm": 250,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775995903584-pkeyu5b",
+      "kind": "received",
+      "at": "2026-04-12T12:11:43.584Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995903582,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1775999344723-uxycnr6",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:09:04.723Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995901942,
+      "radiusMm": 250,
+      "lengthMm": 4000,
+      "taskId": "task-1775919227060-fmtun2z",
+      "taskTitle": "тов веселка"
+    },
+    {
+      "id": "j-1776000763476-leuw4qe",
+      "kind": "stock_updated",
+      "at": "2026-04-12T13:32:43.476Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995903582,
+      "radiusMm": 240,
+      "lengthMm": 4000,
+      "previousRadiusMm": 240,
+      "previousLengthMm": 4000
+    },
+    {
+      "id": "j-1776001595043-h8ral33",
+      "kind": "stock_updated",
+      "at": "2026-04-12T13:46:35.043Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995903582,
+      "radiusMm": 240,
+      "lengthMm": 4000,
+      "previousRadiusMm": 240,
+      "previousLengthMm": 4000
+    },
+    {
+      "id": "j-1776001624549-aykm4ee",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:47:04.549Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995903582,
+      "radiusMm": 240,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001690653-ad2006i",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:48:10.652Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775995894966,
+      "radiusMm": 220,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001707284-7zm1ghx",
+      "kind": "received",
+      "at": "2026-04-12T13:48:27.284Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001707281,
+      "radiusMm": 300,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001708074-3hqco2h",
+      "kind": "received",
+      "at": "2026-04-12T13:48:28.074Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001708073,
+      "radiusMm": 300,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001709083-l4ig7do",
+      "kind": "received",
+      "at": "2026-04-12T13:48:29.083Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001709081,
+      "radiusMm": 300,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001732213-kvdq4wc",
+      "kind": "stock_updated",
+      "at": "2026-04-12T13:48:52.213Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001707281,
+      "radiusMm": 300,
+      "lengthMm": 4000,
+      "previousRadiusMm": 300,
+      "previousLengthMm": 4000
+    },
+    {
+      "id": "j-1776001732907-folps5y",
+      "kind": "stock_updated",
+      "at": "2026-04-12T13:48:52.907Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001707281,
+      "radiusMm": 300,
+      "lengthMm": 4000,
+      "previousRadiusMm": 300,
+      "previousLengthMm": 4000
+    },
+    {
+      "id": "j-1776001744786-w07rug7",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:04.786Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001707281,
+      "radiusMm": 300,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001754107-y0gdx38",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:14.107Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001708073,
+      "radiusMm": 300,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001759102-xjwp14j",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:19.102Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001709081,
+      "radiusMm": 300,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001774053-267q52z",
+      "kind": "received",
+      "at": "2026-04-12T13:49:34.053Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001774050,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001774604-qog56q9",
+      "kind": "received",
+      "at": "2026-04-12T13:49:34.604Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001774602,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001775140-pyr8kgm",
+      "kind": "received",
+      "at": "2026-04-12T13:49:35.140Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001775138,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001786084-pu0ysax",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:46.084Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001774050,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001789704-q7mzhgh",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:49.704Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001774602,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001793926-7idvvhp",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:49:53.926Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001775138,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001812142-6ncullo",
+      "kind": "received",
+      "at": "2026-04-12T13:50:12.142Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001812139,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001812725-hes1uv8",
+      "kind": "received",
+      "at": "2026-04-12T13:50:12.725Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001812723,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001813292-k6xbxtf",
+      "kind": "received",
+      "at": "2026-04-12T13:50:13.292Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001813291,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001826248-jb601j6",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:50:26.248Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001812139,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001830811-pqyjwhj",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:50:30.811Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001812723,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001840051-obt1wmy",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:50:40.051Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001813291,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776001850110-sjpfl9u",
+      "kind": "received",
+      "at": "2026-04-12T13:50:50.110Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001850107,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001855406-el65ggs",
+      "kind": "received",
+      "at": "2026-04-12T13:50:55.406Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001855404,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001855573-l7z2ro3",
+      "kind": "received",
+      "at": "2026-04-12T13:50:55.573Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001855572,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001855741-u6cgz2x",
+      "kind": "received",
+      "at": "2026-04-12T13:50:55.741Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001855740,
+      "radiusMm": 600,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776001867643-tei15k4",
+      "kind": "band_consumed",
+      "at": "2026-04-12T13:51:07.643Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001855404,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776001531366-w96yunj",
+      "taskTitle": "Завдання 1"
+    },
+    {
+      "id": "j-1776020585516-ze59on5",
+      "kind": "band_consumed",
+      "at": "2026-04-12T19:03:05.516Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776001855572,
+      "radiusMm": 600,
+      "lengthMm": 4000,
+      "taskId": "task-1776020538338-1zdscln",
+      "taskTitle": "Завдання 2"
+    },
+    {
+      "id": "j-1776024522388-yepag3x",
+      "kind": "received",
+      "at": "2026-04-12T20:08:42.388Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776024522385,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776024523162-gw7g4jr",
+      "kind": "received",
+      "at": "2026-04-12T20:08:43.162Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776024523161,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776024638639-8jye6ui",
+      "kind": "received",
+      "at": "2026-04-12T20:10:38.639Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776024638635,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776024640020-8x39fns",
+      "kind": "received",
+      "at": "2026-04-12T20:10:40.020Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776024640019,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776024705517-0cluffr",
+      "kind": "band_consumed",
+      "at": "2026-04-12T20:11:45.517Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775988606179,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776024670854-8i1r7k6",
+      "taskTitle": "завдання 5"
+    },
+    {
+      "id": "j-1776283330757-9qvc7a1",
+      "kind": "received",
+      "at": "2026-04-15T20:02:10.757Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283330749,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283430453-mmvbuvx",
+      "kind": "received",
+      "at": "2026-04-15T20:03:50.453Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283430449,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283589781-ea01ttx",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:06:29.781Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1775991090853,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776283547853-pzvhv8r",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776283711752-3kqaq04",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:08:31.752Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776024523161,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776283547853-pzvhv8r",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776283799950-v5kmk78",
+      "kind": "stock_cleared",
+      "at": "2026-04-15T20:09:59.950Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "clearedCount": 11
+    },
+    {
+      "id": "j-1776283811305-pewbtiy",
+      "kind": "received",
+      "at": "2026-04-15T20:10:11.305Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283811302,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283817772-oed4hfe",
+      "kind": "received",
+      "at": "2026-04-15T20:10:17.772Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283817769,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283821149-l7b1uyk",
+      "kind": "received",
+      "at": "2026-04-15T20:10:21.149Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821147,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283821395-ty2sue3",
+      "kind": "received",
+      "at": "2026-04-15T20:10:21.395Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821393,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283821741-7sfklvu",
+      "kind": "received",
+      "at": "2026-04-15T20:10:21.741Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821738,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283821997-cg580g8",
+      "kind": "received",
+      "at": "2026-04-15T20:10:21.997Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821995,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283822231-90w0c4t",
+      "kind": "received",
+      "at": "2026-04-15T20:10:22.231Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283822228,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283822862-qu9hy16",
+      "kind": "received",
+      "at": "2026-04-15T20:10:22.862Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283822858,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283823951-n7a685p",
+      "kind": "received",
+      "at": "2026-04-15T20:10:23.951Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283823949,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283824109-ukfnotw",
+      "kind": "received",
+      "at": "2026-04-15T20:10:24.109Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283824107,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776283824243-684l2s7",
+      "kind": "received",
+      "at": "2026-04-15T20:10:24.243Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283824240,
+      "radiusMm": 180,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776284594530-i5io68i",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:23:14.530Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821147,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776283893786-57uj58g",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776284723873-h96vdwp",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:25:23.873Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821738,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776283893786-57uj58g",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776284846662-rm88cbc",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:27:26.662Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283817769,
+      "radiusMm": 240,
+      "lengthMm": 4000,
+      "taskId": "task-1776283893786-57uj58g",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776285155748-g7w7gew",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:32:35.748Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283811302,
+      "radiusMm": 240,
+      "lengthMm": 4000,
+      "taskId": "task-1776283893786-57uj58g",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776285742837-w69nhfl",
+      "kind": "band_consumed",
+      "at": "2026-04-15T20:42:22.837Z",
+      "recordedBy": {
+        "username": "admin",
+        "sub": "u-admin"
+      },
+      "logId": 1776283821393,
+      "radiusMm": 180,
+      "lengthMm": 4000,
+      "taskId": "task-1776285429807-lq4vpdw",
+      "taskTitle": "тест"
+    },
+    {
+      "id": "j-1776447477249-2je8tj5",
+      "kind": "received",
+      "at": "2026-04-17T17:37:57.249Z",
+      "recordedBy": {
+        "username": "pyom",
+        "sub": "u-1776447292344-biygli9"
+      },
+      "logId": 1776447477246,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776447532972-r8a57h0",
+      "kind": "received",
+      "at": "2026-04-17T17:38:52.972Z",
+      "recordedBy": {
+        "username": "pyom",
+        "sub": "u-1776447292344-biygli9"
+      },
+      "logId": 1776447532968,
+      "radiusMm": 240,
+      "lengthMm": 4000
+    },
+    {
+      "id": "j-1776448229663-2qlcgsx",
+      "kind": "received",
+      "at": "2026-04-17T17:50:29.663Z",
+      "recordedBy": {
+        "username": "pyom",
+        "sub": "u-1776447292344-biygli9"
+      },
+      "logId": 1776448229659,
+      "radiusMm": 220,
+      "lengthMm": 2600
+    },
+    {
+      "id": "j-1776448276833-fg5sazh",
+      "kind": "received",
+      "at": "2026-04-17T17:51:16.833Z",
+      "recordedBy": {
+        "username": "pyom",
+        "sub": "u-1776447292344-biygli9"
+      },
+      "logId": 1776448276829,
+      "radiusMm": 220,
+      "lengthMm": 2600
+    }
+  ]
+}

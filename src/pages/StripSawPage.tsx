@@ -139,7 +139,7 @@ function SingleWidthStripDiagram({
   return <MixedStripDiagram stripMm={stripMm} segments={segments} kerfMm={kerfMm} />
 }
 
-/** Етап 2: смуга з ленточної має висоту з замовлення; тут нарізка по ширині смуги (поперек). */
+/** Етап 2: смуга з стрічкової пили має висоту з замовлення; тут нарізка по ширині смуги (поперек). */
 export function StripSawPage() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState<WorkTask[]>([])
@@ -149,7 +149,7 @@ export function StripSawPage() {
   const [boardThickness, setBoardThickness] = useState('48')
   const [kerf, setKerf] = useState('3')
 
-  /** plan = хорда з плану ленточної (R завдання); manual = своє поле */
+  /** plan = хорда з плану стрічкової пили (R завдання); manual = своє поле */
   const [stripWidthMode, setStripWidthMode] = useState<'plan' | 'manual'>('plan')
   const [measuredStripMm, setMeasuredStripMm] = useState('')
   const [stripThicknessMm, setStripThicknessMm] = useState('')
@@ -329,7 +329,7 @@ export function StripSawPage() {
   /**
    * Ширина смуги для схеми: як у колонці «смуга до різу» — спочатку план циркулярки (avgChord),
    * інакше геометрія R×товщина. Лише maxStripChord давав 0 при «неможливому» R, хоча фактичні
-   * смуги вже є в завданні (з ленточної).
+   * смуги вже є в завданні (з стрічкової пили).
    */
   const plannedChordMm = useMemo(() => {
     if (!selectedStripTask || !thSel) return 0
@@ -640,7 +640,7 @@ export function StripSawPage() {
     <>
       {user?.role === 'circular_operator' && <AssignedTasksPanel />}
       <section className="panel stripSawPageRoot">
-        <h2>Станок 2 — з смуги в бруси</h2>
+        <h2>Багатопил — з смуги в бруси</h2>
 
         {tasksErr && <p className="birkaMsgErr">{tasksErr}</p>}
         <div className="row">
@@ -692,7 +692,7 @@ export function StripSawPage() {
                   </span>
                   <span className="stripHeroMetaSep">·</span>
                   <span>
-                    Прийшло з ленточної: <strong>{activeStockRow.incoming}</strong>
+                    Прийшло з стрічкової пили: <strong>{activeStockRow.incoming}</strong>
                   </span>
                 </div>
               ) : (
@@ -736,12 +736,12 @@ export function StripSawPage() {
         {selectedStripTask && !activeStockRow && stripSawStockRows.length > 0 && thSel > 0 && (
           <p className="panelHint stripWarn">
             Для висоти <strong>{thSel} мм</strong> немає смуг на складі. Оберіть іншу висоту в кроці 1
-            або дочекайтесь запису з ленточної.
+            або дочекайтесь запису з стрічкової пили.
           </p>
         )}
 
         {selectedStripTask && stripSawStockRows.length === 0 && (
-          <p className="panelHint">По цьому завданню ще немає смуг з ленточної.</p>
+          <p className="panelHint">По цьому завданню ще немає смуг з стрічкової пили.</p>
         )}
 
         <details className="stripDetailsAdvanced">
@@ -755,12 +755,12 @@ export function StripSawPage() {
               <thead>
                 <tr>
                   <th
-                    title="Висота смуги в торці; ширина смуги до різу на ст.2 (хорда); типова ширина готового бруса з замовлення"
+                    title="Висота смуги в торці; ширина смуги до різу на багатопилі (хорда); типова ширина готового бруса з замовлення"
                   >
                     Висота / смуга до різу / брус, мм
                   </th>
                   <th
-                    title="Скільки заготовок по довжині можна нарізати торцовкою з однієї смуги: довжина смуги з запису ленточної, довжина заготовки та пропил з замовлення"
+                    title="Скільки заготовок по довжині можна нарізати торцовкою з однієї смуги: довжина смуги з запису стрічкової пили, довжина заготовки та пропил з замовлення"
                   >
                     Торцовка з 1 смуги, шт
                   </th>
@@ -909,7 +909,7 @@ export function StripSawPage() {
               <strong>Іншу товщину (висоту) дошки</strong> оберіть у списку «Висота деталі» нижче — у
               ньому лише ті товщини, для яких є <strong>смуги в залишку</strong> (без смуг ряд не
               з’явиться). Після зміни висоти кроки 2–4 перерахуються під неї. Якщо потрібної товщини
-              немає в списку — дочекайтесь запису з ленточної або оберіть інше завдання.
+              немає в списку — дочекайтесь запису з стрічкової пили або оберіть інше завдання.
             </p>
             {thicknessOptionsWithStripsMm.length > 0 ? (
               <div className="row stripMeasureRow stripWidthModeRow">
@@ -930,7 +930,7 @@ export function StripSawPage() {
               </div>
             ) : (
               <p className="panelHint stripWarn">
-                Немає жодної висоти з смугами в залишку. Дочекайтесь запису з ленточної або оберіть інше
+                Немає жодної висоти з смугами в залишку. Дочекайтесь запису з стрічкової пили або оберіть інше
                 завдання.
               </p>
             )}
@@ -1002,7 +1002,7 @@ export function StripSawPage() {
 
             <h3 className="stripStockTitle">Крок 3. Ширина смуги для схеми</h3>
             <p className="panelHint">
-              Пропил циркулярки: <strong>{kerfEffMm} мм</strong>. Торець як на ленточній:{' '}
+              Пропил циркулярки: <strong>{kerfEffMm} мм</strong>. Торець як на стрічковій пилі:{' '}
               <strong>{bandCrossFit === 'min_waste' ? 'мінімум відходів' : 'смуги в колі'}</strong>
               {plannedChordMm > 0 ? (
                 <>
@@ -1032,7 +1032,7 @@ export function StripSawPage() {
                   checked={stripWidthMode === 'plan'}
                   onChange={() => setStripWidthMode('plan')}
                 />
-                За планом ленточної (для схеми:{' '}
+                За планом стрічкової пили (для схеми:{' '}
                 {planSchemeStripMm > 0 ? `${planSchemeStripMm.toFixed(0)} мм` : '—'})
               </label>
               <label className="stripWidthRadio">
@@ -1064,7 +1064,7 @@ export function StripSawPage() {
                 <p className="panelHint stripSameHeightHint">
                   Усі рядки — це <strong>одна й та сама висота</strong> (крок 1), різняться лише{' '}
                   <strong>ширини брусів</strong> з замовлення — та сторона перетину, яка{' '}
-                  <strong>не</strong> дорівнює обраній висоті смуги (різ поперек смуги на станку 2).
+                  <strong>не</strong> дорівнює обраній висоті смуги (різ поперек смуги на багатопилі).
                   Скільки таких брусів треба і
                   скільки виходить з однієї смуги по ширині — у колонках; змішаний поріз рахується окремо
                   (колонка «У змішаному порізі»).

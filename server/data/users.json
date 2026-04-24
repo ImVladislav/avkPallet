@@ -1,0 +1,47 @@
+[
+  {
+    "id": "u-circular",
+    "username": "cyrkul",
+    "passwordHash": "$2b$10$gkHfQnCmlU2saQKi3GcEY.ETvVG/HOpdW78aoVVCHzQ14L.wNBfjS",
+    "role": "circular_operator",
+    "displayName": "Циркулярка (дошки)"
+  },
+  {
+    "id": "u-sawyer",
+    "username": "rozpyl",
+    "passwordHash": "$2b$10$gkHfQnCmlU2saQKi3GcEY.ETvVG/HOpdW78aoVVCHzQ14L.wNBfjS",
+    "role": "sawyer",
+    "displayName": "Розпиловщик"
+  },
+  {
+    "id": "u-pallet",
+    "username": "zbirka",
+    "passwordHash": "$2b$10$gkHfQnCmlU2saQKi3GcEY.ETvVG/HOpdW78aoVVCHzQ14L.wNBfjS",
+    "role": "pallet_assembly",
+    "displayName": "Збірка піддонів"
+  },
+  {
+    "id": "u-foreman",
+    "username": "brygadyr",
+    "passwordHash": "$2b$10$gkHfQnCmlU2saQKi3GcEY.ETvVG/HOpdW78aoVVCHzQ14L.wNBfjS",
+    "role": "foreman",
+    "displayName": "Бригадир"
+  },
+  {
+    "id": "u-admin",
+    "username": "admin",
+    "passwordHash": "$2b$10$gkHfQnCmlU2saQKi3GcEY.ETvVG/HOpdW78aoVVCHzQ14L.wNBfjS",
+    "role": "admin",
+    "displayName": "Адміністратор"
+  },
+  {
+    "id": "u-1776447292344-biygli9",
+    "username": "pyom",
+    "passwordHash": "$2b$10$pW0zNII61eto0huXu6sdg.Dq5LqBz2Oexon/sIrhUX.Tp/O5IiUHO",
+    "role": "sawyer",
+    "displayName": "Прийомщик",
+    "tabs": [
+      "logs"
+    ]
+  }
+]

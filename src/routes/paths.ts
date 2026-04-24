@@ -8,17 +8,19 @@ export type TabId =
   | 'warehouse'
   | 'pallets'
   | 'boards'
+  | 'users'
 
 export const TAB_LABELS: Record<TabId, string> = {
   logs: 'Прийом кругляка',
   work_journal: 'Журнал робіт',
-  band_saw: 'Ленточна пилка',
-  strip_saw: 'Станок 2 (ширина)',
+  band_saw: 'Стрічкова пила',
+  strip_saw: 'Багатопил',
   circular_saw: 'Циркулярка',
   tasks: 'Завдання',
   warehouse: 'Склад',
   pallets: 'Піддони',
   boards: 'Дошки',
+  users: 'Працівники',
 }
 
 export const TAB_ORDER: TabId[] = [
@@ -31,6 +33,7 @@ export const TAB_ORDER: TabId[] = [
   'warehouse',
   'pallets',
   'boards',
+  'users',
 ]
 
 export const TAB_PATHS: Record<TabId, string> = {
@@ -43,6 +46,7 @@ export const TAB_PATHS: Record<TabId, string> = {
   warehouse: '/warehouse',
   pallets: '/pallets',
   boards: '/boards',
+  users: '/users',
 }
 
 const PATH_TO_TAB = new Map<string, TabId>(

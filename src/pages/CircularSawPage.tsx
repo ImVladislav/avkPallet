@@ -16,7 +16,7 @@ import type { StripInventoryEntry, WorkTask } from '../types/task'
 
 import './CircularSawPage.css'
 
-/** Типова довжина смуги (мм) з журналу ленточної — за сумарною кількістю смуг. */
+/** Типова довжина смуги (мм) з журналу стрічкової пили — за сумарною кількістю смуг. */
 function dominantLogLengthMmFromStripInventory(inv: StripInventoryEntry[]): number | null {
   const byLen = new Map<number, number>()
   for (const e of inv) {
@@ -566,7 +566,7 @@ export function CircularSawPage() {
     return dominantLogLengthMmFromStripInventory(selectedTask.stripInventory)
   }, [selectedTask])
 
-  /** Поки немає брусів зі ст.2 — підставляємо довжину смуги з ленточної, щоб одразу була карта різів. */
+  /** Поки немає брусів з багатопилу — підставляємо довжину смуги зі стрічкової пили, щоб одразу була карта різів. */
   useEffect(() => {
     if (!selectedTaskId || !selectedTask) {
       lastAutoFillTaskIdRef.current = null
@@ -596,7 +596,7 @@ export function CircularSawPage() {
         <header className="circularHero">
           <h2>Циркулярка — розкрій бруса по довжині</h2>
           <p className="circularHeroLead">
-            Кругляк не потрібен. Якщо обрано завдання зі списком брусів після станка 2 — показуємо{' '}
+            Кругляк не потрібен. Якщо обрано завдання зі списком брусів після багатопилу — показуємо{' '}
             <strong>чергу брусів</strong>: берете перший (наприклад 4 м), ріжете по схемі, потім
             наступний і т.д., а потреба з замовлення зменшується після кожного бруса. Без завдання —
             одна довжина бруса вручну і одна карта різів.
@@ -663,8 +663,8 @@ export function CircularSawPage() {
               <span className="circularFieldHint">
                 {useSequentialLayout
                   ? 'Для режиму з завданням розкрій нижче — по кожному брусу з таблиці; це поле для ручної перевірки одного бруса.'
-                  : dominantInvLengthMm != null ? `Якщо ще немає записів станка 2, довжина підставляється з журналу смуг (ленточна), найчастіше ${dominantInvLengthMm} мм — перевірте фактичний брус.`
-                    : 'Виміряйте готовий брус або візьміть довжину зі смуги після ленточної.'}
+                  : dominantInvLengthMm != null ? `Якщо ще немає записів на багатопилі, довжина підставляється з журналу смуг (стрічкова пила), найчастіше ${dominantInvLengthMm} мм — перевірте фактичний брус.`
+                    : 'Виміряйте готовий брус або візьміть довжину зі смуги після стрічкової пили.'}
               </span>
             </label>
             <label className="circularField">
@@ -686,20 +686,20 @@ export function CircularSawPage() {
           {selectedTask ? (
             <>
               <p className="panelHint circularBoardsIntro">
-                Бруси з цього завдання (після <strong>станка 2</strong>). Робочий порядок:{' '}
+                Бруси з цього завдання (після <strong>багатопилу</strong>). Робочий порядок:{' '}
                 <strong>1-й брус</strong> у списку → карта різів для нього → <strong>2-й</strong> →
                 … Потреба з замовлення оновлюється після кожного бруса. Кнопка «У поле» лише
                 підставляє довжину одного бруса у поле вручну.
               </p>
               {!hasStripInventory ? (
                 <p className="panelHint circularBoardsWarn">
-                  У завданні ще немає записів <strong>stripInventory</strong> (смуги з ленточної) —
+                  У завданні ще немає записів <strong>stripInventory</strong> (смуги з стрічкової пили) —
                   фактичні довжини смуг можуть бути невідомі (показ «—» або 0).
                 </p>
               ) : null}
               {taskBoardRows.length === 0 ? (
                 <p className="panelHint">
-                  Поки немає записів розпилу станка 2 — список брусів з’явиться після реєстрації
+                  Поки немає записів розпилу на багатопилі — список брусів з’явиться після реєстрації
                   розпилу смуг у завданні.
                 </p>
               ) : (
@@ -755,7 +755,7 @@ export function CircularSawPage() {
             </>
           ) : (
             <p className="panelHint circularBoardsIntro">
-              Оберіть завдання вище — тут з’явиться список брусів із записів станка 2 по цьому
+              Оберіть завдання вище — тут з’явиться список брусів із записів багатопилу по цьому
               завданню.
             </p>
           )}
@@ -888,7 +888,7 @@ export function CircularSawPage() {
               <p className="birkaMsgErr circularWarn">
                 Після останнього бруса в списку лишається потреба:{' '}
                 <strong>{remainingPiecesAfterSequential}</strong> заготовок (за сумою довжин у
-                замовленні). Додайте бруси через станок 2 або перевірте довжини / кількості.
+                замовленні). Додайте бруси через багатопил або перевірте довжини / кількості.
               </p>
             ) : null}
           </div>
@@ -896,8 +896,8 @@ export function CircularSawPage() {
 
         {useSequentialLayout && !sequentialPlanReady && requests.length > 0 ? (
           <p className="panelHint">
-            Немає брусів з відомою довжиною смуги (0 мм) — дочекайтесь записів станка 2 або
-            ленточної з довжиною смуги.
+            Немає брусів з відомою довжиною смуги (0 мм) — дочекайтесь записів багатопилу або
+            стрічкової пили з довжиною смуги.
           </p>
         ) : null}
 

@@ -87,7 +87,7 @@ export async function deleteTask(id: string): Promise<void> {
 
 export type BandCutLine = { thicknessMm: number; stripQty: number }
 
-/** Ленточна: зареєструвати зняті смуги (факт), додати до завдання для станка 2. */
+/** Стрічкова пила: зареєструвати зняті смуги (факт), додати до завдання для багатопилу. */
 export async function recordBandCut(
   taskId: string,
   payload: {
@@ -110,7 +110,7 @@ export async function recordBandCut(
   return data.task
 }
 
-/** Станок 2: зареєструвати розпил (списати смуги + зарахувати дошки в план). */
+/** Багатопил: зареєструвати розпил (списати смуги + зарахувати дошки в план). */
 export async function recordStripSawCut(
   taskId: string,
   payload: {
@@ -134,7 +134,7 @@ export async function recordStripSawCut(
   return data.task
 }
 
-/** Станок 2: ручний залишок або скинути корекцію (remainder: null). */
+/** Багатопил: ручний залишок або скинути корекцію (remainder: null). */
 export async function patchStripSawRemainder(
   taskId: string,
   payload: { thicknessMm: number; remainder: number | null },

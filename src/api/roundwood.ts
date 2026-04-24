@@ -36,6 +36,8 @@ export async function receiveRoundwoodLog(payload: {
   radiusMm: number
   lengthMm: number
   id?: number
+  /** Об'єм з бірки (м³), опційно. */
+  volumeM3?: number
 }): Promise<{ stock: LogItem[]; item: LogItem }> {
   const res = await fetch(apiUrl('/api/roundwood/receive'), {
     method: 'POST',

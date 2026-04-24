@@ -11,6 +11,7 @@ import { WorkJournalPage } from './pages/WorkJournalPage'
 import { PalletsPage } from './pages/PalletsPage'
 import { TasksPage } from './pages/TasksPage'
 import { WarehousePage } from './pages/WarehousePage'
+import { UsersPage } from './pages/UsersPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { firstAllowedPath } from './routes/paths'
 import './styles/layout.css'
@@ -125,6 +126,14 @@ function App() {
             element={
               <ProtectedRoute tab="boards">
                 <BoardsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute tab="users">
+                <UsersPage />
               </ProtectedRoute>
             }
           />
