@@ -1,0 +1,491 @@
+.logsPageTitle {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #14232f;
+  letter-spacing: -0.02em;
+}
+
+.logsLead {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: #5a6b7a;
+  line-height: 1.35;
+  max-width: 640px;
+}
+
+.logsFormCard {
+  border: 1px solid #c8d4e0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.logsWoodTabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 12px;
+  border: 1px solid #d8e2eb;
+  border-radius: 999px;
+  background: #f5f8fc;
+}
+
+.logsWoodTabs button {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #3d5266;
+  font-weight: 700;
+}
+
+.logsWoodTabs button.active {
+  background: #2f6b9a;
+  color: #fff;
+}
+
+.logsTableWrap {
+  border: 1px solid #c8d4e0;
+  border-radius: 10px;
+  overflow: auto;
+  background: #fff;
+  max-width: 900px;
+}
+
+.logsFormCard .row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.logsFormCard .row > label,
+.logsFormCard .row > .lengthField {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.logsFormCard .row > button {
+  flex: 0 0 auto;
+}
+
+.logsTableWrap h3 {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3d5266;
+  background: linear-gradient(180deg, #f5f8fc 0%, #eef3f9 100%);
+  border-bottom: 1px solid #d8e2eb;
+}
+
+.logsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.logsTable th,
+.logsTable td {
+  border-bottom: 1px solid #e8edf2;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.logsTable thead th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #5a6b7a;
+  background: #fafcfd;
+}
+
+.logsTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.logsActionCell {
+  width: 48px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.logsRemoveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a4a4a;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.logsRemoveBtn:hover:not(:disabled) {
+  background: #fdeaea;
+  color: #c62828;
+}
+
+.logsRemoveBtn:focus-visible {
+  outline: 2px solid #6b8cae;
+  outline-offset: 2px;
+}
+
+.logsRemoveBtnBusy {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.logsIconX {
+  display: block;
+  flex-shrink: 0;
+}
+
+.logsLegacy {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+}
+
+.logsLabelModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(21, 33, 58, 0.45);
+}
+
+.logsLabelModal {
+  width: min(520px, 96vw);
+  border: 1px solid #c8d4e0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.logsLabelModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.logsLabelModalHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1f2e3a;
+}
+
+.logsLabelModalList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.logsLabelModalList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e8edf2;
+  padding-bottom: 6px;
+}
+
+.logsLabelModalList div:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.logsLabelModalList dt {
+  margin: 0;
+  color: #5a6b7a;
+  font-weight: 600;
+}
+
+.logsLabelModalList dd {
+  margin: 0;
+  color: #1f2e3a;
+  font-weight: 700;
+}
+
+.logsScannerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(16, 28, 46, 0.52);
+}
+
+.logsScannerModal {
+  width: min(620px, 96vw);
+  border: 1px solid #c8d4e0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+
+.logsScannerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.logsScannerHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1f2e3a;
+}
+
+.logsScannerHint {
+  margin: 0 0 10px;
+}
+
+.logsScannerActions {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.logsScannerFileInput {
+  display: none;
+}
+
+.logsScannerVideoWrap {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0e1620;
+  border: 1px solid #dbe4ec;
+}
+
+.logsScannerVideo {
+  width: 100%;
+  max-height: 70vh;
+  display: block;
+  object-fit: cover;
+}
+
+.logsScannerOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 22, 32, 0.58);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 1024px) {
+  .logsFormCard {
+    max-width: 100%;
+  }
+
+  .logsTable {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logsPageTitle {
+    font-size: 1.2rem;
+  }
+
+  .logsLead {
+    font-size: 0.84rem;
+    margin-bottom: 12px;
+  }
+
+  .logsFormCard {
+    padding: 12px;
+  }
+
+  .logsFormCard input,
+  .logsFormCard select,
+  .logsFormCard button {
+    min-height: 42px;
+  }
+
+  .logsFormCard .row {
+    gap: 8px;
+  }
+
+  .logsFormCard .row > label,
+  .logsFormCard .row > .lengthField,
+  .logsFormCard .row > button {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .logsLabelModalBackdrop,
+  .logsScannerBackdrop {
+    padding: 10px;
+  }
+
+  .logsLabelModal,
+  .logsScannerModal {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .logsLabelModalHeader,
+  .logsScannerHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .logsLabelModalList div {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .logsScannerVideo {
+    max-height: 58vh;
+  }
+
+  .logsScannerActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .panel {
+    padding: 10px;
+  }
+
+  .logsPageTitle {
+    font-size: 1.08rem;
+    line-height: 1.25;
+  }
+
+  .logsLead {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  .logsFormCard {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .logsFormCard input,
+  .logsFormCard button {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .logsFormCard .row {
+    gap: 7px;
+  }
+
+  .logsTableWrap {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .logsTableWrap h3 {
+    font-size: 0.72rem;
+    padding: 9px 10px;
+  }
+
+  .logsTable {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .logsTable thead {
+    display: none;
+  }
+
+  .logsTable tbody {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .logsTable tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border: 1px solid #e0e7ee;
+    border-radius: 10px;
+    padding: 10px;
+    padding-right: 52px;
+    background: #fff;
+    position: relative;
+  }
+
+  .logsTable tbody td {
+    border: none;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(50% - 3px);
+    gap: 10px;
+    font-size: 0.84rem;
+  }
+
+  .logsTable tbody td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #5a6b7a;
+    flex-shrink: 0;
+  }
+
+  .logsTable tbody td.logsActionCell {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-height: 0;
+    width: auto;
+  }
+
+  .logsTable tbody td.logsActionCell::before {
+    content: '';
+  }
+
+  .logsTable tbody td[data-label='Час'] {
+    width: 100%;
+    padding-right: 4px;
+    font-weight: 700;
+    color: #213243;
+  }
+
+  .logsTable tbody td[data-label='Час']::before {
+    content: '';
+    display: none;
+  }
+
+  .logsTable tbody td.logsActionCell .logsRemoveBtn {
+    width: 32px;
+    height: 32px;
+  }
+}

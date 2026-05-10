@@ -1,0 +1,45 @@
+import type { UserRole } from '../api'
+
+/** Має збігатися з server/helpers/roles.js — меню бургера будується з цих списків */
+export const ROLE_TABS: Record<UserRole, readonly string[]> = {
+  sawyer: ['band_saw', 'salary'],
+  circular_operator: ['work_journal', 'strip_saw', 'circular_saw', 'salary'],
+  pallet_assembly: ['pallets', 'boards', 'salary'],
+  foreman: [
+    'logs',
+    'work_journal',
+    'tasks',
+    'warehouse',
+    'salary',
+  ],
+  admin: [
+    'logs',
+    'work_journal',
+    'band_saw',
+    'strip_saw',
+    'circular_saw',
+    'tasks',
+    'warehouse',
+    'pallets',
+    'boards',
+    'users',
+  ],
+  super_admin: [
+    'logs',
+    'work_journal',
+    'band_saw',
+    'strip_saw',
+    'circular_saw',
+    'tasks',
+    'warehouse',
+    'pallets',
+    'boards',
+    'users',
+  ],
+}
+
+export function tabsForRole(role: string): string[] {
+  const key = String(role ?? '').trim() as UserRole
+  const row = ROLE_TABS[key]
+  return row ? [...row] : []
+}

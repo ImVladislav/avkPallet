@@ -1,0 +1,229 @@
+.palletsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.palletsHeader h2 {
+  margin: 0 0 6px;
+}
+
+.palletsHeader p {
+  max-width: 760px;
+  margin: 0;
+  color: #5f6b7a;
+}
+
+.palletsKpi {
+  min-width: 110px;
+  padding: 12px 14px;
+  border: 1px solid #d8e0ea;
+  border-radius: 14px;
+  background: #f8fafc;
+  text-align: right;
+}
+
+.palletsKpi span,
+.palletsField span,
+.palletsCapacity span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.palletsKpi strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.birkaMsgOk {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.palletsGrid {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.palletsCard {
+  padding: 16px;
+  border: 1px solid #d8e0ea;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.palletsCard h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+
+.palletsField {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.palletsField select,
+.palletsField input {
+  width: 100%;
+}
+
+.palletsRecipeText {
+  margin: 4px 0 14px;
+  color: #475569;
+}
+
+.palletsCapacity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.palletsCapacity strong {
+  color: #1d4ed8;
+}
+
+.palletsTableWrap {
+  overflow-x: auto;
+}
+
+.palletsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.palletsTable th,
+.palletsTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.palletsTable th {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.palletsGood,
+.palletsBad {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.palletsGood {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.palletsBad {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.palletsEmpty {
+  margin: 0;
+  color: #64748b;
+}
+
+.palletsHistory {
+  margin-top: 16px;
+}
+
+.palletsBuildList {
+  display: grid;
+  gap: 8px;
+}
+
+.palletsBuildItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.palletsBuildItem div {
+  display: grid;
+  gap: 2px;
+}
+
+.palletsBuildItem span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .palletsHeader,
+  .palletsGrid,
+  .palletsBuildItem {
+    display: grid;
+  }
+
+  .palletsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .palletsKpi {
+    width: 100%;
+    text-align: left;
+  }
+
+  .palletsTable,
+  .palletsTable thead,
+  .palletsTable tbody,
+  .palletsTable tr,
+  .palletsTable th,
+  .palletsTable td {
+    display: block;
+  }
+
+  .palletsTable thead {
+    display: none;
+  }
+
+  .palletsTable tr {
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    margin-bottom: 10px;
+  }
+
+  .palletsTable td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 0;
+    padding: 7px 0;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .palletsTable td::before {
+    content: attr(data-label);
+    color: #64748b;
+    font-weight: 700;
+    text-align: left;
+  }
+}

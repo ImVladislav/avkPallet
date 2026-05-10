@@ -1,0 +1,152 @@
+.warehousePageTitle {
+  margin: 0 0 4px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #14232f;
+  letter-spacing: -0.02em;
+}
+
+.warehouseLead {
+  margin: 0 0 20px;
+  font-size: 0.88rem;
+  color: #5a6b7a;
+  max-width: 720px;
+  line-height: 1.35;
+}
+
+.warehouseGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1080px;
+}
+
+.warehouseCard {
+  border: 1px solid #c8d4e0;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.warehouseCardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #f5f8fc 0%, #eef3f9 100%);
+  border-bottom: 1px solid #d8e2eb;
+}
+
+.warehouseCardHead h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a2d3d;
+}
+
+.warehouseCardMeta {
+  font-size: 0.8rem;
+  color: #5a6b7a;
+}
+
+.warehouseCardBody {
+  padding: 12px 14px 14px;
+}
+
+.warehouseKpiRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.warehouseKpi {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #1a2d3d;
+}
+
+.warehouseKpiLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7c8c;
+  margin-right: 6px;
+}
+
+.warehouseTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.warehouseTable th,
+.warehouseTable td {
+  border: 1px solid #d0dae3;
+  padding: 7px 9px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.warehouseTable thead th {
+  background: #e8eef5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #3d5266;
+}
+
+.warehouseTable tbody tr:nth-child(even) {
+  background: #fafcfd;
+}
+
+.warehouseNum {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.warehouseNumWarn {
+  color: #a65c12;
+}
+
+.warehouseNumOk {
+  color: #1e6b1e;
+}
+
+.warehouseFoot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #d0dae3;
+  font-size: 0.82rem;
+  color: #4a5a68;
+}
+
+.warehouseEmpty {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: #6b5c4d;
+  background: #faf7f2;
+  border-radius: 8px;
+  border: 1px dashed #d4c4b0;
+}
+
+.warehousePill {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #dfe8f2;
+  color: #2a4055;
+  vertical-align: middle;
+  margin-left: 6px;
+}

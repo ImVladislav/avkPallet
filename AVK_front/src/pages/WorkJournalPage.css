@@ -1,0 +1,29 @@
+.workJournalTabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border: 1px solid #d8e2eb;
+  border-radius: 999px;
+  background: #f5f8fc;
+}
+
+.workJournalTabs button {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #3d5266;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.workJournalTabs button.active {
+  background: #2f6b9a;
+  color: #fff;
+}
+
+.workJournalTableWrap {
+  overflow-x: auto;
+}

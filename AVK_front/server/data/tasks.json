@@ -1,0 +1,376 @@
+[
+  {
+    "id": "task-1776283893786-57uj58g",
+    "title": "тест",
+    "orderText": "20 18 8 100\n20 10 5 100\n20 5 10 100\n20 2 2 100",
+    "unit": "cm",
+    "radiusMm": 180,
+    "kerfBandMm": 4,
+    "kerfCircMm": 3,
+    "assignTo": [
+      "sawyer",
+      "circular_operator"
+    ],
+    "plan": {
+      "band": [
+        {
+          "thicknessMm": 180,
+          "qtyNeeded": 20,
+          "rowsAlongDiameter": 1,
+          "boardsFromOneCrossSection": 1,
+          "crossSectionsNeeded": 20,
+          "rowsAlongHeight": 1,
+          "feasible": true,
+          "overshootBoards": 0,
+          "qtyDone": 20
+        },
+        {
+          "thicknessMm": 100,
+          "qtyNeeded": 20,
+          "rowsAlongDiameter": 3,
+          "boardsFromOneCrossSection": 8,
+          "crossSectionsNeeded": 3,
+          "rowsAlongHeight": 3,
+          "feasible": true,
+          "overshootBoards": 4,
+          "qtyDone": 20
+        },
+        {
+          "thicknessMm": 50,
+          "qtyNeeded": 20,
+          "rowsAlongDiameter": 6,
+          "boardsFromOneCrossSection": 31,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 6,
+          "feasible": true,
+          "overshootBoards": 11,
+          "qtyDone": 20
+        },
+        {
+          "thicknessMm": 20,
+          "qtyNeeded": 20,
+          "rowsAlongDiameter": 15,
+          "boardsFromOneCrossSection": 172,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 15,
+          "feasible": true,
+          "overshootBoards": 152,
+          "qtyDone": 20
+        }
+      ],
+      "circular": [
+        {
+          "thicknessMm": 180,
+          "qtyNeeded": 20,
+          "avgChordMm": 311.7691453623979,
+          "avgBoardWidthMm": 80,
+          "circularCutsPerCrossSection": 2,
+          "circularCutsTotalEstimate": 40,
+          "qtyDone": 0
+        },
+        {
+          "thicknessMm": 100,
+          "qtyNeeded": 20,
+          "avgChordMm": 309.88892673694244,
+          "avgBoardWidthMm": 50,
+          "circularCutsPerCrossSection": 13,
+          "circularCutsTotalEstimate": 39,
+          "qtyDone": 0
+        },
+        {
+          "thicknessMm": 50,
+          "qtyNeeded": 20,
+          "avgChordMm": 300.65010139547525,
+          "avgBoardWidthMm": 100,
+          "circularCutsPerCrossSection": 8,
+          "circularCutsTotalEstimate": 8,
+          "qtyDone": 0
+        },
+        {
+          "thicknessMm": 20,
+          "qtyNeeded": 20,
+          "avgChordMm": 284.13703258611866,
+          "avgBoardWidthMm": 20,
+          "circularCutsPerCrossSection": 165,
+          "circularCutsTotalEstimate": 165,
+          "qtyDone": 0
+        }
+      ],
+      "alongLog": {
+        "totalPieces": 80,
+        "sumQtyTimesLengthMm": 80000,
+        "kerfAlongLogMm": 316,
+        "minLogLengthMm": 80316
+      }
+    },
+    "stripInventory": [
+      {
+        "thicknessMm": 50,
+        "qty": 7,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:23:14.502Z"
+      },
+      {
+        "thicknessMm": 20,
+        "qty": 7,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:23:14.502Z"
+      },
+      {
+        "thicknessMm": 100,
+        "qty": 5,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:23:14.502Z"
+      },
+      {
+        "thicknessMm": 100,
+        "qty": 1,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:25:23.852Z"
+      },
+      {
+        "thicknessMm": 100,
+        "qty": 1,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:27:26.640Z"
+      },
+      {
+        "thicknessMm": 180,
+        "qty": 4,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:27:26.640Z"
+      },
+      {
+        "thicknessMm": 180,
+        "qty": 3,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:32:35.731Z"
+      }
+    ],
+    "status": "in_progress",
+    "createdAt": "2026-04-15T20:11:33.786Z",
+    "createdBy": {
+      "id": "u-admin",
+      "username": "admin"
+    },
+    "updatedAt": "2026-04-15T20:32:35.731Z"
+  },
+  {
+    "id": "task-1776285429807-lq4vpdw",
+    "title": "тест",
+    "orderText": "8 6 3 200\n8 5 5 200\n8 4 5 200\n8 3 4 200",
+    "unit": "cm",
+    "radiusMm": 180,
+    "kerfBandMm": 4,
+    "kerfCircMm": 3,
+    "assignTo": [
+      "sawyer",
+      "circular_operator"
+    ],
+    "plan": {
+      "band": [
+        {
+          "thicknessMm": 60,
+          "qtyNeeded": 8,
+          "rowsAlongDiameter": 5,
+          "boardsFromOneCrossSection": 22,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 5,
+          "feasible": true,
+          "overshootBoards": 14,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 50,
+          "qtyNeeded": 8,
+          "rowsAlongDiameter": 6,
+          "boardsFromOneCrossSection": 31,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 6,
+          "feasible": true,
+          "overshootBoards": 23,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 40,
+          "qtyNeeded": 8,
+          "rowsAlongDiameter": 8,
+          "boardsFromOneCrossSection": 49,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 8,
+          "feasible": true,
+          "overshootBoards": 41,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 30,
+          "qtyNeeded": 8,
+          "rowsAlongDiameter": 10,
+          "boardsFromOneCrossSection": 83,
+          "crossSectionsNeeded": 1,
+          "rowsAlongHeight": 10,
+          "feasible": true,
+          "overshootBoards": 75,
+          "qtyDone": 8
+        }
+      ],
+      "circular": [
+        {
+          "thicknessMm": 60,
+          "qtyNeeded": 8,
+          "avgChordMm": 302.71428744225904,
+          "avgBoardWidthMm": 30,
+          "circularCutsPerCrossSection": 38,
+          "circularCutsTotalEstimate": 38,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 50,
+          "qtyNeeded": 8,
+          "avgChordMm": 300.65010139547525,
+          "avgBoardWidthMm": 50,
+          "circularCutsPerCrossSection": 25,
+          "circularCutsTotalEstimate": 25,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 40,
+          "qtyNeeded": 8,
+          "avgChordMm": 290.30974082001524,
+          "avgBoardWidthMm": 50,
+          "circularCutsPerCrossSection": 32,
+          "circularCutsTotalEstimate": 32,
+          "qtyDone": 8
+        },
+        {
+          "thicknessMm": 30,
+          "qtyNeeded": 8,
+          "avgChordMm": 294.0190991948665,
+          "avgBoardWidthMm": 40,
+          "circularCutsPerCrossSection": 54,
+          "circularCutsTotalEstimate": 54,
+          "qtyDone": 8
+        }
+      ],
+      "alongLog": {
+        "totalPieces": 32,
+        "sumQtyTimesLengthMm": 64000,
+        "kerfAlongLogMm": 124,
+        "minLogLengthMm": 64124
+      }
+    },
+    "stripInventory": [
+      {
+        "thicknessMm": 60,
+        "qty": 8,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:42:22.805Z"
+      },
+      {
+        "thicknessMm": 50,
+        "qty": 8,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:42:22.805Z"
+      },
+      {
+        "thicknessMm": 40,
+        "qty": 8,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:42:22.805Z"
+      },
+      {
+        "thicknessMm": 30,
+        "qty": 8,
+        "logLengthMm": 4000,
+        "recordedAt": "2026-04-15T20:42:22.805Z"
+      }
+    ],
+    "status": "in_progress",
+    "createdAt": "2026-04-15T20:37:09.807Z",
+    "createdBy": {
+      "id": "u-admin",
+      "username": "admin"
+    },
+    "updatedAt": "2026-04-15T20:52:42.776Z",
+    "stripSaw": {
+      "cuts": [
+        {
+          "thicknessMm": 30,
+          "stripQty": 1,
+          "boardsTotal": 5,
+          "boardsCredited": 5,
+          "boardsByWidthMm": {
+            "40": 2,
+            "60": 3
+          },
+          "recordedAt": "2026-04-15T20:51:38.466Z"
+        },
+        {
+          "thicknessMm": 30,
+          "stripQty": 1,
+          "boardsTotal": 5,
+          "boardsCredited": 3,
+          "boardsByWidthMm": {
+            "40": 2,
+            "60": 3
+          },
+          "recordedAt": "2026-04-15T20:51:47.585Z"
+        },
+        {
+          "thicknessMm": 40,
+          "stripQty": 1,
+          "boardsTotal": 7,
+          "boardsCredited": 7,
+          "boardsByWidthMm": {
+            "30": 4,
+            "50": 3
+          },
+          "recordedAt": "2026-04-15T20:52:29.716Z"
+        },
+        {
+          "thicknessMm": 40,
+          "stripQty": 1,
+          "boardsTotal": 7,
+          "boardsCredited": 1,
+          "boardsByWidthMm": {
+            "30": 4,
+            "50": 3
+          },
+          "recordedAt": "2026-04-15T20:52:30.547Z"
+        },
+        {
+          "thicknessMm": 60,
+          "stripQty": 1,
+          "boardsTotal": 9,
+          "boardsCredited": 8,
+          "boardsByWidthMm": {
+            "30": 9
+          },
+          "recordedAt": "2026-04-15T20:52:37.666Z"
+        },
+        {
+          "thicknessMm": 50,
+          "stripQty": 1,
+          "boardsTotal": 6,
+          "boardsCredited": 6,
+          "boardsByWidthMm": {
+            "40": 3,
+            "50": 3
+          },
+          "recordedAt": "2026-04-15T20:52:41.906Z"
+        },
+        {
+          "thicknessMm": 50,
+          "stripQty": 1,
+          "boardsTotal": 6,
+          "boardsCredited": 2,
+          "boardsByWidthMm": {
+            "40": 3,
+            "50": 3
+          },
+          "recordedAt": "2026-04-15T20:52:42.776Z"
+        }
+      ]
+    }
+  }
+]
