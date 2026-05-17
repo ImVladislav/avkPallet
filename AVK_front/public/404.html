@@ -6,6 +6,9 @@
     <title>avk-pallet</title>
     <script>
       ;(function redirectToApp(location) {
+        const host = location.hostname
+        const onGithubPages = host === 'github.io' || host.endsWith('.github.io')
+        if (!onGithubPages) return
         const keepSegments = 1
         const pathSegments = location.pathname.split('/')
         const basePath = pathSegments.slice(0, 1 + keepSegments).join('/')
@@ -19,5 +22,14 @@
       })(window.location)
     </script>
   </head>
-  <body></body>
+  <body>
+    <p id="ghp-404-fallback" style="display: none; font-family: system-ui, sans-serif; padding: 1rem">
+      Сторінку не знайдено.
+    </p>
+    <script>
+      if (!location.hostname.endsWith('.github.io') && location.hostname !== 'github.io') {
+        document.getElementById('ghp-404-fallback').style.display = 'block'
+      }
+    </script>
+  </body>
 </html>
