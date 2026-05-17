@@ -26,11 +26,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: AVK_front/package-lock.json
 
       - name: Install dependencies
+        working-directory: AVK_front
         run: npm ci
 
       - name: Build
+        working-directory: AVK_front
+        env:
+          VITE_BASE: /avkPallet/
         run: npm run build
 
       - name: Setup Pages
@@ -39,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: AVK_front/dist
 
   deploy:
     environment:
