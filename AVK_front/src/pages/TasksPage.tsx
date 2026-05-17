@@ -15,13 +15,16 @@ import {
   updateTask,
 } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { useAppDialog } from '../context/AppDialogContext'
 import { PALLET_RECIPES } from '../helpers/palletRecipes'
 import {
   formatOrderLinesAsTextCm,
+  formatOrderTextAsHumanLines,
   orderLinesFromDimensionRows,
   parseForemanOrderText,
   type OrderLine,
 } from '../helpers/parseForemanOrders'
+import { formatOpenSecondariesForCard } from '../helpers/taskOrderDisplay'
 import type { TaskDimensionRow, TaskKind, WorkTask } from '../types/task'
 import './TasksPage.css'
 
@@ -51,8 +54,8 @@ const TASK_KIND_LABELS: Record<TaskKind, string> = {
 }
 
 const FORM_TABS: { id: TaskKind; hint: string }[] = [
-  { id: 'resaw', hint: 'Стрічкова пила та багатопил: лише перетин (сторона 1 × сторона 2). Довжину вказують на вкладці циркулярки.' },
-  { id: 'circular', hint: 'Наріз по довжині на циркулярці (розміри та довжина).' },
+  { id: 'resaw', hint: '' },
+  { id: 'circular', hint: '' },
   { id: 'pallets', hint: 'Збірка піддонів: тип та кількість (окремо від циркулярки).' },
 ]
 
@@ -60,31 +63,35 @@ function taskKindOf(task: WorkTask): TaskKind {
   return task.taskKind ?? 'resaw'
 }
 
-/** Малюнок перетину дошки (прямокутник); сторони 20×40 і 40×20 дають той самий вигляд. */
+/** Малюнок перетину: сторона 1 і сторона 2 як у таблиці (не змішуємо 20×40 із 40×20); підписи збоку прямокутника. */
 function BoardCrossPreview({ sideACm, sideBCm }: { sideACm: string; sideBCm: string }) {
   const pa = Number(String(sideACm).replace(',', '.'))
   const pb = Number(String(sideBCm).replace(',', '.'))
   const a = Number.isFinite(pa) && pa > 0 ? pa : 0
   const b = Number.isFinite(pb) && pb > 0 ? pb : 0
-  const min = Math.min(a, b)
-  const max = Math.max(a, b)
-  if (min <= 0 || max <= 0) {
+  if (a <= 0 || b <= 0) {
     return (
       <span className="foremanBoardPreviewEmpty" title="Введіть дві сторони перетину, см">
         —
       </span>
     )
   }
-  const vb = 56
-  const scale = vb / max
-  const rw = max * scale
-  const rh = min * scale
-  const ox = (vb - rw) / 2
-  const oy = (vb - rh) / 2
+  const fmt = (n: number) => (Number.isInteger(n) ? String(n) : String(Number(n.toFixed(1))))
+  const fa = fmt(a)
+  const fb = fmt(b)
+  const pad = 12
+  const inner = 44
+  const maxDim = Math.max(a, b)
+  const scale = inner / maxDim
+  const rw = a * scale
+  const rh = b * scale
+  const vb = pad * 2 + inner
+  const ox = pad + (inner - rw) / 2
+  const oy = pad + (inner - rh) / 2
   return (
     <div
       className="foremanBoardPreview"
-      title={`Перетин дошки: ${min}×${max} см (менша × більша сторона; для плану це товщина × ширина)`}
+      title={`Перетин дошки: сторона 1 — ${fa} см, сторона 2 — ${fb} см`}
     >
       <svg
         viewBox={`0 0 ${vb} ${vb}`}
@@ -94,9 +101,28 @@ function BoardCrossPreview({ sideACm, sideBCm }: { sideACm: string; sideBCm: str
         aria-hidden
       >
         <rect x={ox} y={oy} width={rw} height={rh} className="foremanBoardPreviewRect" rx={1.5} />
+        <text
+          x={ox + rw / 2}
+          y={Math.max(9, oy - 2)}
+          textAnchor="middle"
+          className="foremanBoardPreviewDimText"
+          fontSize="9"
+        >
+          {fa}
+        </text>
+        <text
+          x={Math.max(6, ox - 2)}
+          y={oy + rh / 2}
+          textAnchor="end"
+          dominantBaseline="central"
+          className="foremanBoardPreviewDimText"
+          fontSize="9"
+        >
+          {fb}
+        </text>
       </svg>
       <span className="foremanBoardPreviewLabel">
-        {min}×{max} см
+        {fa}×{fb} см
       </span>
     </div>
   )
@@ -115,7 +141,7 @@ function newRow(kind: 'main' | 'secondary' = 'main', withBoardLength = true): Di
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     kind,
-    qty: '1',
+    qty: kind === 'secondary' ? '' : '1',
     height: '5',
     width: '5',
     length: withBoardLength ? '120' : '',
@@ -129,7 +155,7 @@ function orderLinesToDimRows(lines: OrderLine[]): DimRow[] {
     qty: String(l.qty),
     height: String(l.aMm / 10),
     width: String(l.bMm / 10),
-    length: String(l.lengthMm / 10),
+    length: l.lengthMm > 0 ? String(l.lengthMm / 10) : '',
   }))
 }
 
@@ -154,38 +180,215 @@ function dimRowsToStoredRows(rows: DimRow[]): TaskDimensionRow[] {
   }))
 }
 
-function allRowsAsMain(rows: DimRow[]): DimRow[] {
-  return rows.map((r) => ({ ...r, kind: 'main' as const }))
+/** Ключ для порівняння «ті самі розміри» (см у формі). */
+function dimRowComparisonKey(r: DimRow, withBoardLength: boolean): string | null {
+  const h = Number(String(r.height).replace(',', '.').trim())
+  const w = Number(String(r.width).replace(',', '.').trim())
+  if (!Number.isFinite(h) || !Number.isFinite(w) || h <= 0 || w <= 0) return null
+
+  const round = (x: number) => Math.round(x * 1000) / 1000
+  const hr = round(h)
+  const wr = round(w)
+
+  if (withBoardLength) {
+    const L = Number(String(r.length).replace(',', '.').trim())
+    if (!Number.isFinite(L) || L <= 0) return null
+    return `${hr}|${wr}|${round(L)}`
+  }
+
+  const Lraw = String(r.length ?? '').trim()
+  if (Lraw === '') {
+    return `${hr}|${wr}|`
+  }
+  const L = Number(Lraw.replace(',', '.'))
+  if (!Number.isFinite(L) || L <= 0) return null
+  return `${hr}|${wr}|${round(L)}`
+}
+
+/** id рядків, що входять у групи з однаковими розмірами (≥ 2 рядки на ключ). */
+function duplicateDimRowIds(rows: DimRow[], withBoardLength: boolean): Set<string> {
+  const byKey = new Map<string, string[]>()
+  for (const r of rows) {
+    const key = dimRowComparisonKey(r, withBoardLength)
+    if (key == null) continue
+    const list = byKey.get(key) ?? []
+    list.push(r.id)
+    byKey.set(key, list)
+  }
+  const out = new Set<string>()
+  for (const ids of byKey.values()) {
+    if (ids.length > 1) for (const id of ids) out.add(id)
+  }
+  return out
+}
+
+const SESSION_TAB_KEY = 'avk_tasks_formTab'
+const SESSION_DRAFT_KEY = 'avk_tasks_page_draft'
+
+type TasksPageDraftV1 = {
+  v: 1
+  formTab: TaskKind
+  resawTitle: string
+  resawRows: DimRow[]
+  circTitle: string
+  circRows: DimRow[]
+  palTitle: string
+  palPalletTypeId: string
+  palPalletQty: string
+  tech: ForemanTechFields
+}
+
+function readStoredFormTab(): TaskKind | null {
+  try {
+    const t = sessionStorage.getItem(SESSION_TAB_KEY)
+    if (t === 'resaw' || t === 'circular' || t === 'pallets') return t
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+function readPendingDraft(): TasksPageDraftV1 | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_DRAFT_KEY)
+    if (!raw) return null
+    const d = JSON.parse(raw) as TasksPageDraftV1
+    if (d?.v !== 1) return null
+    const ft = d.formTab
+    if (ft !== 'resaw' && ft !== 'circular' && ft !== 'pallets') return null
+    return d
+  } catch {
+    return null
+  }
+}
+
+const DEFAULT_PALLET_TYPE_ID = PALLET_RECIPES[0]?.id ?? ''
+
+/** Один рядок «як після скидання форми» (ігноруємо id — він випадковий). */
+function isFreshResawRow(r: DimRow): boolean {
+  return (
+    r.kind === 'main' &&
+    r.qty.trim() === '1' &&
+    r.height.trim() === '5' &&
+    r.width.trim() === '5' &&
+    r.length.trim() === ''
+  )
+}
+
+function isFreshCircRow(r: DimRow): boolean {
+  return (
+    r.kind === 'main' &&
+    r.qty.trim() === '1' &&
+    r.height.trim() === '5' &&
+    r.width.trim() === '5' &&
+    r.length.trim() === '120'
+  )
+}
+
+function isDefaultResawSection(d: TasksPageDraftV1): boolean {
+  if (!Array.isArray(d.resawRows) || d.resawRows.length !== 1) return false
+  return d.resawTitle.trim() === '' && isFreshResawRow(d.resawRows[0]!)
+}
+
+function isDefaultCircSection(d: TasksPageDraftV1): boolean {
+  if (!Array.isArray(d.circRows) || d.circRows.length !== 1) return false
+  return d.circTitle.trim() === '' && isFreshCircRow(d.circRows[0]!)
+}
+
+function isDefaultPalSection(d: TasksPageDraftV1): boolean {
+  return (
+    d.palTitle.trim() === '' &&
+    d.palPalletQty.trim() === '1' &&
+    d.palPalletTypeId === DEFAULT_PALLET_TYPE_ID
+  )
+}
+
+function isDefaultSavedTech(t: ForemanTechFields): boolean {
+  return (
+    t.radiusMm === DEFAULT_TECH.radiusMm &&
+    t.kerfBandMm === DEFAULT_TECH.kerfBandMm &&
+    t.kerfCircMm === DEFAULT_TECH.kerfCircMm
+  )
+}
+
+/** Чи відрізняється збережений стан від того, що дає «нова» сторінка (без уведеного тексту). */
+function isDraftMeaningful(d: TasksPageDraftV1): boolean {
+  const tech = d.tech ?? DEFAULT_TECH
+  const sameAsFreshForm =
+    isDefaultResawSection(d) &&
+    isDefaultCircSection(d) &&
+    isDefaultPalSection(d) &&
+    isDefaultSavedTech(tech)
+  return !sameAsFreshForm
 }
 
 export function TasksPage() {
   const { user } = useAuth()
+  const { confirm: appConfirm, showAlert } = useAppDialog()
   const canManageTasks =
     user?.role === 'foreman' || user?.role === 'admin' || user?.role === 'super_admin'
   const [list, setList] = useState<WorkTask[]>([])
   const [listErr, setListErr] = useState<string | null>(null)
   const [loadingList, setLoadingList] = useState(true)
 
-  const [formTab, setFormTab] = useState<TaskKind>('resaw')
+  const [formTab, setFormTab] = useState<TaskKind>(() => readStoredFormTab() ?? 'resaw')
   const [resawTitle, setResawTitle] = useState('')
-  const [resawRows, setResawRows] = useState<DimRow[]>(() => [newRow('main')])
+  const [resawRows, setResawRows] = useState<DimRow[]>(() => [newRow('main', false)])
   const [circTitle, setCircTitle] = useState('')
   const [circRows, setCircRows] = useState<DimRow[]>(() => [newRow('main')])
   const [palTitle, setPalTitle] = useState('')
   const [palPalletTypeId, setPalPalletTypeId] = useState(PALLET_RECIPES[0]?.id ?? '')
   const [palPalletQty, setPalPalletQty] = useState('1')
 
-  const [tech, setTech] = useState<ForemanTechFields>(DEFAULT_TECH)
+  const [techOverride, setTechOverride] = useState<ForemanTechFields | null>(null)
   const [foremanError, setForemanError] = useState<string | null>(null)
   const [saveErr, setSaveErr] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [pendingDraftOffer, setPendingDraftOffer] = useState<TasksPageDraftV1 | null>(() => {
+    const d = readPendingDraft()
+    return d && isDraftMeaningful(d) ? d : null
+  })
   const tabsScrollRef = useRef<HTMLDivElement | null>(null)
 
-  const filteredList = useMemo(
-    () => list.filter((t) => taskKindOf(t) === formTab),
-    [list, formTab],
+  const filteredList = useMemo(() => {
+    if (formTab === 'circular') {
+      return list.filter((t) => {
+        const k = taskKindOf(t)
+        return k === 'circular' || k === 'resaw'
+      })
+    }
+    if (formTab === 'resaw') return list.filter((t) => taskKindOf(t) === 'resaw')
+    return list.filter((t) => taskKindOf(t) === 'pallets')
+  }, [list, formTab])
+
+  const taskPendingDelete = useMemo(
+    () => (deleteConfirmId ? list.find((t) => t.id === deleteConfirmId) : undefined),
+    [list, deleteConfirmId],
   )
+
+  const listHeading = useMemo(() => {
+    if (formTab === 'circular') return 'Циркулярка та розпил'
+    return TASK_KIND_LABELS[formTab]
+  }, [formTab])
+
+  const activeFormTabHint = useMemo(
+    () => FORM_TABS.find((t) => t.id === formTab)?.hint?.trim() ?? '',
+    [formTab],
+  )
+
+  const resawDuplicateIds = useMemo(() => duplicateDimRowIds(resawRows, false), [resawRows])
+  const circDuplicateIds = useMemo(() => duplicateDimRowIds(circRows, true), [circRows])
+
+  useEffect(() => {
+    const dup =
+      formTab === 'resaw' ? resawDuplicateIds.size : formTab === 'circular' ? circDuplicateIds.size : 0
+    if (dup === 0) {
+      setForemanError((prev) => (prev?.includes('однаковими розмірами') ? null : prev))
+    }
+  }, [formTab, resawDuplicateIds.size, circDuplicateIds.size])
 
   const loadList = useCallback(async () => {
     setListErr(null)
@@ -205,6 +408,62 @@ export function TasksPage() {
   }, [loadList])
 
   useEffect(() => {
+    if (!deleteConfirmId) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !deleteBusy) setDeleteConfirmId(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [deleteConfirmId, deleteBusy])
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SESSION_TAB_KEY, formTab)
+    } catch {
+      /* ignore */
+    }
+  }, [formTab])
+
+  useEffect(() => {
+    if (editingId) return
+    const t = window.setTimeout(() => {
+      try {
+        const draft: TasksPageDraftV1 = {
+          v: 1,
+          formTab,
+          resawTitle,
+          resawRows,
+          circTitle,
+          circRows,
+          palTitle,
+          palPalletTypeId,
+          palPalletQty,
+          tech: techOverride ?? DEFAULT_TECH,
+        }
+        if (!isDraftMeaningful(draft)) {
+          sessionStorage.removeItem(SESSION_DRAFT_KEY)
+          return
+        }
+        sessionStorage.setItem(SESSION_DRAFT_KEY, JSON.stringify(draft))
+      } catch {
+        /* ignore */
+      }
+    }, 450)
+    return () => window.clearTimeout(t)
+  }, [
+    editingId,
+    formTab,
+    resawTitle,
+    resawRows,
+    circTitle,
+    circRows,
+    palTitle,
+    palPalletTypeId,
+    palPalletQty,
+    techOverride,
+  ])
+
+  useEffect(() => {
     const wrap = tabsScrollRef.current
     const active = wrap?.querySelector('.taskFormTabActive') as HTMLElement | undefined
     if (!active) return
@@ -218,7 +477,7 @@ export function TasksPage() {
 
   const resetResawForm = () => {
     setResawTitle('')
-    setResawRows([newRow('main')])
+    setResawRows([newRow('main', false)])
   }
   const resetCircForm = () => {
     setCircTitle('')
@@ -235,21 +494,16 @@ export function TasksPage() {
     resetResawForm()
     resetCircForm()
     resetPalForm()
-    setTech({
-      radiusMm: DEFAULT_TECH.radiusMm,
-      kerfBandMm: DEFAULT_TECH.kerfBandMm,
-      kerfCircMm: DEFAULT_TECH.kerfCircMm,
-    })
+    setTechOverride(null)
     setForemanError(null)
     setSaveErr(null)
   }
 
-  const startEdit = (task: WorkTask) => {
+  const startEdit = (task: WorkTask, opts?: { openCircularDims?: boolean }) => {
     setSaveErr(null)
     setForemanError(null)
     const kind = taskKindOf(task)
-    setFormTab(kind)
-    setTech({
+    setTechOverride({
       radiusMm: task.radiusMm,
       kerfBandMm: task.kerfBandMm,
       kerfCircMm: task.kerfCircMm,
@@ -257,44 +511,69 @@ export function TasksPage() {
     setEditingId(task.id)
 
     if (kind === 'pallets') {
+      setFormTab('pallets')
       setPalTitle(task.title)
       setPalPalletTypeId(task.palletTarget?.palletTypeId ?? PALLET_RECIPES[0]?.id ?? '')
       setPalPalletQty(String(task.palletTarget?.qty ?? 1))
       return
     }
 
-    const parsed = parseForemanOrderText(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
-    if (!parsed.ok) {
-      setSaveErr(`Не вдалося прочитати замовлення: ${parsed.error}`)
-      setEditingId(null)
-      return
-    }
     const storedRows = Array.isArray(task.dimensionRows) ? storedRowsToDimRows(task.dimensionRows) : []
-    const baseRows = storedRows.length > 0 ? storedRows : orderLinesToDimRows(parsed.lines)
-    if (kind === 'circular') {
+    const orderTrim = String(task.orderText ?? '').trim()
+
+    let baseRows: DimRow[]
+    if (orderTrim === '') {
+      if (storedRows.length === 0) {
+        setSaveErr('Не вдалося відкрити завдання: немає тексту замовлення й збережених рядків розмірів.')
+        setEditingId(null)
+        return
+      }
+      baseRows = storedRows
+    } else {
+      const parsed = parseForemanOrderText(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
+      if (!parsed.ok) {
+        setSaveErr(`Не вдалося прочитати замовлення: ${parsed.error}`)
+        setEditingId(null)
+        return
+      }
+      baseRows = storedRows.length > 0 ? storedRows : orderLinesToDimRows(parsed.lines)
+    }
+
+    if (kind === 'circular' || (kind === 'resaw' && opts?.openCircularDims === true)) {
+      setFormTab('circular')
       setCircTitle(task.title)
-      setCircRows(allRowsAsMain(baseRows))
+      setCircRows(baseRows.length > 0 ? baseRows : [newRow('main')])
       return
     }
+
+    setFormTab('resaw')
     setResawTitle(task.title)
-    const mains = baseRows.filter((r) => r.kind === 'main')
-    setResawRows(allRowsAsMain(mains.length > 0 ? mains : baseRows))
+    setResawRows(baseRows.length > 0 ? baseRows : [newRow('main', false)])
   }
 
-  const removeTask = async (id: string) => {
-    if (!window.confirm('Видалити це завдання? Дію не можна скасувати.')) return
+  const confirmDeleteTask = async () => {
+    if (!deleteConfirmId) return
+    const id = deleteConfirmId
+    setDeleteBusy(true)
     try {
       await deleteTask(id)
+      setDeleteConfirmId(null)
       if (editingId === id) cancelEdit()
       await loadList()
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Помилка видалення')
+      void showAlert({
+        title: 'Помилка видалення',
+        message: e instanceof Error ? e.message : 'Не вдалося видалити завдання.',
+      })
+    } finally {
+      setDeleteBusy(false)
     }
   }
 
   const saveTask = async () => {
     setSaveErr(null)
     setForemanError(null)
+    const tech = techOverride ?? DEFAULT_TECH
     if (tech.radiusMm <= 0) {
       setForemanError('Некоректний радіус у завданні.')
       return
@@ -339,6 +618,11 @@ export function TasksPage() {
         }
         await loadList()
         cancelEdit()
+        try {
+          sessionStorage.removeItem(SESSION_DRAFT_KEY)
+        } catch {
+          /* ignore */
+        }
         return
       }
 
@@ -349,17 +633,45 @@ export function TasksPage() {
         return
       }
 
-      const parsed = orderLinesFromDimensionRows(rows, 'cm')
+      const duplicateIds = duplicateDimRowIds(rows, formTab === 'circular')
+      if (duplicateIds.size > 0) {
+        setForemanError(
+          'У таблиці є рядки з однаковими розмірами (вони підсвічені). Об’єднайте кількість в одному рядку або змініть розміри — інакше при збереженні вони злилися б у плані без окремого обліку.',
+        )
+        return
+      }
+
+      const parsed = orderLinesFromDimensionRows(
+        rows.map((r) => ({
+          kind: r.kind,
+          qty: r.qty,
+          height: r.height,
+          width: r.width,
+          length: r.length,
+        })),
+        'cm',
+        {
+          requireBoardLength: formTab === 'circular',
+        },
+      )
       if (parsed.ok === false) {
         setForemanError(parsed.error)
         return
       }
 
+      const editedTask = editingId ? list.find((t) => t.id === editingId) : undefined
+      const payloadTaskKind: TaskKind =
+        formTab === 'resaw'
+          ? 'resaw'
+          : editedTask && taskKindOf(editedTask) === 'resaw'
+            ? 'resaw'
+            : 'circular'
+
       const payload = {
         title: titleText,
         orderText: formatOrderLinesAsTextCm(parsed.lines),
-        taskKind: formTab,
-        dimensionRows: dimRowsToStoredRows(rows.map((r) => ({ ...r, kind: 'main' }))),
+        taskKind: payloadTaskKind,
+        dimensionRows: dimRowsToStoredRows(rows),
         ...techPayload,
       }
 
@@ -370,6 +682,11 @@ export function TasksPage() {
       }
       await loadList()
       cancelEdit()
+      try {
+        sessionStorage.removeItem(SESSION_DRAFT_KEY)
+      } catch {
+        /* ignore */
+      }
     } catch (e) {
       setSaveErr(e instanceof Error ? e.message : 'Не вдалося зберегти')
     } finally {
@@ -377,11 +694,54 @@ export function TasksPage() {
     }
   }
 
-  const changeFormTab = (tab: TaskKind) => {
-    if (editingId) return
+  const changeFormTab = async (tab: TaskKind) => {
+    if (tab === formTab) return
+    if (editingId) {
+      const ok = await appConfirm({
+        title: 'Закрити редагування?',
+        message:
+          'Закрити редагування поточного завдання? Незбережені зміни будуть втрачені.',
+        confirmLabel: 'Закрити',
+        cancelLabel: 'Скасувати',
+      })
+      if (!ok) return
+      cancelEdit()
+    }
     setFormTab(tab)
     setForemanError(null)
     setSaveErr(null)
+  }
+
+  const restoreForemanDraft = () => {
+    const d = pendingDraftOffer
+    if (!d) return
+    setFormTab(d.formTab)
+    setResawTitle(d.resawTitle)
+    setResawRows(d.resawRows.length > 0 ? d.resawRows : [newRow('main', false)])
+    setCircTitle(d.circTitle)
+    setCircRows(d.circRows.length > 0 ? d.circRows : [newRow('main')])
+    setPalTitle(d.palTitle)
+    setPalPalletTypeId(d.palPalletTypeId || PALLET_RECIPES[0]?.id || '')
+    setPalPalletQty(d.palPalletQty || '1')
+    setTechOverride(
+      d.tech
+        ? {
+            radiusMm: d.tech.radiusMm ?? DEFAULT_TECH.radiusMm,
+            kerfBandMm: d.tech.kerfBandMm ?? DEFAULT_TECH.kerfBandMm,
+            kerfCircMm: d.tech.kerfCircMm ?? DEFAULT_TECH.kerfCircMm,
+          }
+        : null,
+    )
+    setPendingDraftOffer(null)
+  }
+
+  const dismissForemanDraft = () => {
+    try {
+      sessionStorage.removeItem(SESSION_DRAFT_KEY)
+    } catch {
+      /* ignore */
+    }
+    setPendingDraftOffer(null)
   }
 
   const statusLabel = (s: WorkTask['status']) => {
@@ -392,28 +752,50 @@ export function TasksPage() {
 
   const statusClass = (s: WorkTask['status']) => s
 
+  type DimSectionOptions = {
+    allowSecondaryRows?: boolean
+    duplicateRowIds?: Set<string>
+  }
+
   const renderDimSection = (
     rows: DimRow[],
     setRows: Dispatch<SetStateAction<DimRow[]>>,
-    lengthHeader: string,
-  ) => (
-    <div className="foremanDimTableWrap">
-      <table className="foremanDimTable">
+    lengthHeader: string | null,
+    options?: DimSectionOptions,
+  ) => {
+    const dup = options?.duplicateRowIds
+    const allowSecondary = options?.allowSecondaryRows ?? true
+    return (
+      <div className="foremanDimTableWrap">
+        <div className="foremanDimTableScroll">
+          <table className="foremanDimTable">
         <thead>
           <tr>
             <th>№</th>
-            <th>Скільки шт</th>
+            <th title="У побічному рядку кількість можна не вказувати — позиція тоді не входить у план як фіксоване замовлення (лише розміри для орієнтиру).">
+              Скільки шт
+            </th>
             <th title="Перша сторона перетину, см">Сторона 1, см</th>
             <th title="Друга сторона перетину, см">Сторона 2, см</th>
             <th>Перетин</th>
-            <th>{lengthHeader}</th>
+            {lengthHeader != null ? <th>{lengthHeader}</th> : null}
             <th />
           </tr>
         </thead>
         <tbody>
           {rows.map((row, idx) => (
-            <tr key={row.id}>
-              <td>{idx + 1}</td>
+            <tr
+              key={row.id}
+              className={
+                [
+                  row.kind === 'secondary' ? 'foremanDimRowSecondary' : '',
+                  dup?.has(row.id) ? 'foremanDimRowDuplicate' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
+            >
+              <td title={row.kind === 'secondary' ? 'Побічний рядок' : undefined}>{idx + 1}</td>
               <td>
                 <input
                   className="foremanDimInput"
@@ -423,6 +805,17 @@ export function TasksPage() {
                     setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, qty: v } : r)))
                   }}
                   inputMode="numeric"
+                  placeholder={row.kind === 'secondary' ? "необов'язково" : undefined}
+                  title={
+                    row.kind === 'secondary'
+                      ? 'Залиште порожнім, якщо кількість не фіксується: у плані замовлення цей рядок не збільшує обсяг (скільки вийде за фактом).'
+                      : undefined
+                  }
+                  aria-label={
+                    row.kind === 'secondary'
+                      ? "Кількість, шт (необов'язково для побічного рядка)"
+                      : 'Кількість, шт'
+                  }
                 />
               </td>
               <td>
@@ -450,17 +843,19 @@ export function TasksPage() {
               <td className="foremanBoardPreviewCell">
                 <BoardCrossPreview sideACm={row.height} sideBCm={row.width} />
               </td>
-              <td>
-                <input
-                  className="foremanDimInput"
-                  value={row.length}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, length: v } : r)))
-                  }}
-                  inputMode="numeric"
-                />
-              </td>
+              {lengthHeader != null ? (
+                <td>
+                  <input
+                    className="foremanDimInput"
+                    value={row.length}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, length: v } : r)))
+                    }}
+                    inputMode="numeric"
+                  />
+                </td>
+              ) : null}
               <td>
                 <button
                   type="button"
@@ -475,47 +870,32 @@ export function TasksPage() {
           ))}
         </tbody>
       </table>
-      <button type="button" className="ghost" onClick={() => setRows((prev) => [...prev, newRow('main')])}>
-        + Рядок
-      </button>
+        </div>
+        <div className="foremanDimTableActions">
+        <button
+          type="button"
+          className="ghost"
+          onClick={() => setRows((prev) => [...prev, newRow('main', lengthHeader != null)])}
+        >
+          + Рядок
+        </button>
+        {allowSecondary ? (
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => setRows((prev) => [...prev, newRow('secondary', lengthHeader != null)])}
+          >
+            + Побічний рядок
+          </button>
+        ) : null}
+        </div>
     </div>
-  )
-
-  const techBlock = (
-    <div className="foremanTechRow row">
-      <label>
-        R колоди, мм
-        <input
-          type="number"
-          value={tech.radiusMm}
-          min={1}
-          onChange={(e) => setTech((x) => ({ ...x, radiusMm: Number(e.target.value) || 0 }))}
-        />
-      </label>
-      <label>
-        Пропил стрічки, мм
-        <input
-          type="number"
-          value={tech.kerfBandMm}
-          min={0}
-          onChange={(e) => setTech((x) => ({ ...x, kerfBandMm: Number(e.target.value) || 0 }))}
-        />
-      </label>
-      <label>
-        Пропил цирк., мм
-        <input
-          type="number"
-          value={tech.kerfCircMm}
-          min={0}
-          onChange={(e) => setTech((x) => ({ ...x, kerfCircMm: Number(e.target.value) || 0 }))}
-        />
-      </label>
-    </div>
-  )
+    );
+  }
 
   return (
     <>
-      <section className="panel">
+      <section className="panel taskFormPanel">
         <div className="taskFormTabsChrome">
           <div className="taskFormTabsScroll" ref={tabsScrollRef}>
             <div className="taskFormTabsRow" role="tablist" aria-label="Тип завдання">
@@ -526,9 +906,8 @@ export function TasksPage() {
                   role="tab"
                   aria-selected={formTab === tab.id}
                   className={`taskFormTab ${formTab === tab.id ? 'taskFormTabActive' : ''}`}
-                  disabled={!!editingId && formTab !== tab.id}
-                  title={tab.hint}
-                  onClick={() => changeFormTab(tab.id)}
+                  title={tab.hint || undefined}
+                  onClick={() => void changeFormTab(tab.id)}
                 >
                   {TASK_KIND_LABELS[tab.id]}
                 </button>
@@ -537,12 +916,27 @@ export function TasksPage() {
           </div>
         </div>
         <div className="taskFormBody">
-          <p className="panelHint">{FORM_TABS.find((t) => t.id === formTab)?.hint}</p>
+          {pendingDraftOffer && !editingId && (
+            <div className="taskDraftBanner" role="status">
+              <p className="taskDraftBannerText">
+                Знайдено збережену чернетку форми. Відновити введений текст?
+              </p>
+              <div className="taskDraftBannerActions">
+                <button type="button" className="ghost" onClick={restoreForemanDraft}>
+                  Відновити
+                </button>
+                <button type="button" className="ghost" onClick={dismissForemanDraft}>
+                  Видалити чернетку
+                </button>
+              </div>
+            </div>
+          )}
+          {activeFormTabHint ? <p className="panelHint">{activeFormTabHint}</p> : null}
 
           {formTab === 'resaw' && (
             <>
-              <div className="row">
-                <label className="foremanTaLabel" style={{ flex: 1, minWidth: '220px' }}>
+              <div className="taskFormTitleRow">
+                <label className="foremanTaLabel">
                   Назва завдання
                   <input
                     value={resawTitle}
@@ -551,16 +945,25 @@ export function TasksPage() {
                   />
                 </label>
               </div>
-              {techBlock}
-              <h3 style={{ margin: '4px 0 8px' }}>Розміри (станок 1 та 2)</h3>
-              {renderDimSection(resawRows, setResawRows, 'Довжина заготовки, см')}
+              <h3 className="taskFormSectionTitle">Розміри</h3>
+              {resawDuplicateIds.size > 0 ? (
+                <p className="foremanDupWarn" role="alert">
+                  Є кілька рядків з <strong>однаковими розмірами</strong> (сторона 1 × сторона 2). Вони підсвічені
+                  жовтим. Об’єднайте кількість в одному рядку або змініть розміри — інакше зберегти завдання не
+                  вийде (у плані такі рядки зливаються в одну позицію).
+                </p>
+              ) : null}
+              {renderDimSection(resawRows, setResawRows, null, {
+                allowSecondaryRows: true,
+                duplicateRowIds: resawDuplicateIds,
+              })}
             </>
           )}
 
           {formTab === 'circular' && (
             <>
-              <div className="row">
-                <label className="foremanTaLabel" style={{ flex: 1, minWidth: '220px' }}>
+              <div className="taskFormTitleRow">
+                <label className="foremanTaLabel">
                   Назва завдання
                   <input
                     value={circTitle}
@@ -569,16 +972,25 @@ export function TasksPage() {
                   />
                 </label>
               </div>
-              {techBlock}
-              <h3 style={{ margin: '4px 0 8px' }}>Дошки (сторона 1 × сторона 2 × довжина)</h3>
-              {renderDimSection(circRows, setCircRows, 'Довжина, см')}
+              <h3 className="taskFormSectionTitle">Дошки</h3>
+              {circDuplicateIds.size > 0 ? (
+                <p className="foremanDupWarn" role="alert">
+                  Є кілька рядків з <strong>однаковими розмірами</strong> (сторона 1 × сторона 2 × довжина). Вони
+                  підсвічені жовтим. Об’єднайте кількість в одному рядку або змініть розміри — інакше зберегти
+                  завдання не вийде (у плані такі рядки зливаються в одну позицію).
+                </p>
+              ) : null}
+              {renderDimSection(circRows, setCircRows, 'Довжина, см', {
+                allowSecondaryRows: true,
+                duplicateRowIds: circDuplicateIds,
+              })}
             </>
           )}
 
           {formTab === 'pallets' && (
             <>
-              <div className="row">
-                <label className="foremanTaLabel" style={{ flex: 1, minWidth: '220px' }}>
+              <div className="taskFormTitleRow">
+                <label className="foremanTaLabel">
                   Назва завдання
                   <input
                     value={palTitle}
@@ -587,8 +999,8 @@ export function TasksPage() {
                   />
                 </label>
               </div>
-              <h3 style={{ margin: '4px 0 8px' }}>Піддон та обсяг</h3>
-              <div className="row foremanPalletPickRow">
+              <h3 className="taskFormSectionTitle">Піддон та обсяг</h3>
+              <div className="taskFormPalletRow foremanPalletPickRow">
                 <label>
                   Тип піддону
                   <select
@@ -618,28 +1030,23 @@ export function TasksPage() {
             </>
           )}
 
-          <div className="row">
-            <button type="button" className="ghost" onClick={saveTask} disabled={saving}>
+          <div className="taskFormActions">
+            <button type="button" className="taskFormPrimaryBtn" onClick={saveTask} disabled={saving}>
               {saving ? 'Збереження…' : editingId ? 'Зберегти зміни' : 'Зберегти завдання'}
             </button>
             {editingId && (
-              <button type="button" className="ghost" onClick={cancelEdit} disabled={saving}>
+              <button type="button" className="ghost taskFormSecondaryBtn" onClick={cancelEdit} disabled={saving}>
                 Скасувати редагування
               </button>
             )}
           </div>
-          {editingId && (
-            <p className="panelHint taskEditBanner">
-              Редагується завдання зі списку нижче. Після збереження форма очиститься.
-            </p>
-          )}
           {foremanError && <p className="birkaMsgErr">{foremanError}</p>}
           {saveErr && <p className="birkaMsgErr">{saveErr}</p>}
         </div>
       </section>
 
       <section className="panel taskList">
-        <h2>Список: {TASK_KIND_LABELS[formTab]}</h2>
+        <h2>Список: {listHeading}</h2>
         {loadingList && <p>Завантаження…</p>}
         {listErr && <p className="birkaMsgErr">{listErr}</p>}
         {!loadingList && filteredList.length === 0 && !listErr && (
@@ -647,6 +1054,13 @@ export function TasksPage() {
         )}
 
         {filteredList.map((task) => {
+          const unit = task.unit === 'cm' ? 'cm' : 'mm'
+          const orderRaw = task.orderText.trim()
+          const orderPretty =
+            orderRaw.length > 0 ? formatOrderTextAsHumanLines(task.orderText, unit) : null
+          const orderDisplay = orderPretty ?? orderRaw
+          const openSecText = formatOpenSecondariesForCard(task)
+          const hideEditButton = formTab === 'circular' && taskKindOf(task) === 'resaw'
           return (
             <article key={task.id} className="taskCard">
               <div className="taskCardHead">
@@ -654,13 +1068,24 @@ export function TasksPage() {
                 <div className="taskCardHeadRight">
                   {canManageTasks && (
                     <div className="taskCardActions">
-                      <button type="button" className="ghost small" onClick={() => startEdit(task)}>
-                        Редагувати
-                      </button>
+                      {!hideEditButton ? (
+                        <button type="button" className="ghost small" onClick={() => startEdit(task)}>
+                          Редагувати
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="ghost small"
+                          title="Додати довжину або рядок розмірів для роботи на циркулярці; тип завдання «Розпил» не змінюється"
+                          onClick={() => startEdit(task, { openCircularDims: true })}
+                        >
+                          Додати розмір
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="ghost small danger"
-                        onClick={() => removeTask(task.id)}
+                        onClick={() => setDeleteConfirmId(task.id)}
                       >
                         Видалити
                       </button>
@@ -674,11 +1099,7 @@ export function TasksPage() {
               <p className="taskMeta">
                 <span className="taskKindBadge">{TASK_KIND_LABELS[taskKindOf(task)]}</span>
                 {' · '}
-                {new Date(task.createdAt).toLocaleString()} · автор: {task.createdBy.username} · R{' '}
-                {task.unit === 'cm'
-                  ? `${(task.radiusMm / 10).toFixed(1)} см`
-                  : `${task.radiusMm} мм`}
-                · пропили: {task.kerfBandMm} / {task.kerfCircMm} мм
+                {new Date(task.createdAt).toLocaleString()} · автор: {task.createdBy.username}
               </p>
               {taskKindOf(task) === 'pallets' && task.palletTarget && (
                 <p className="taskPalletTarget">
@@ -690,11 +1111,13 @@ export function TasksPage() {
                 <strong>Вид робіт:</strong>{' '}
                 {task.assignTo.map((r) => ASSIGN_LABELS[r] ?? r).join(', ')}
               </p>
-              {task.orderText.trim() && <pre className="taskOrderPreview">{task.orderText.trim()}</pre>}
-              {(taskKindOf(task) === 'resaw' || taskKindOf(task) === 'circular') && (
-                <p className="panelHint taskOrderFmtHint">
-                  Формат рядка: <strong>кількість · сторона 1 · сторона 2 · довжина</strong> у см (у тексті
-                  збереження сторони зведені min/max).
+              {!!orderDisplay && <pre className="taskOrderPreview">{orderDisplay}</pre>}
+              {openSecText && (
+                <p
+                  className="taskOpenSecondaryNote"
+                  title="Не входить у текст замовлення й не збільшує плановий обсяг до появи відповідних смуг."
+                >
+                  {openSecText}
                 </p>
               )}
 
@@ -709,7 +1132,10 @@ export function TasksPage() {
                         const updated = await patchTaskStatus(task.id, v)
                         setList((prev) => prev.map((x) => (x.id === updated.id ? updated : x)))
                       } catch (err) {
-                        alert(err instanceof Error ? err.message : 'Помилка')
+                        void showAlert({
+                          title: 'Помилка',
+                          message: err instanceof Error ? err.message : 'Не вдалося оновити статус.',
+                        })
                       }
                     }}
                   >
@@ -723,6 +1149,54 @@ export function TasksPage() {
           )
         })}
       </section>
+
+      {deleteConfirmId && (
+        <div
+          className="taskDeleteModalBackdrop"
+          role="presentation"
+          onClick={() => {
+            if (!deleteBusy) setDeleteConfirmId(null)
+          }}
+        >
+          <div
+            className="taskDeleteModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="taskDeleteModalTitle"
+            aria-describedby="taskDeleteModalDesc"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="taskDeleteModalTitle" className="taskDeleteModalTitle">
+              Видалити завдання?
+            </h2>
+            <p id="taskDeleteModalDesc" className="taskDeleteModalLead">
+              Цю дію не можна скасувати. Усі пов’язані записи плану та обліку для цього завдання зникнуть зі
+              списку.
+            </p>
+            <p className="taskDeleteModalTaskName">
+              {taskPendingDelete?.title?.trim() || 'Без назви'}
+            </p>
+            <div className="taskDeleteModalActions">
+              <button
+                type="button"
+                className="ghost taskDeleteModalBtnCancel"
+                disabled={deleteBusy}
+                onClick={() => setDeleteConfirmId(null)}
+              >
+                Скасувати
+              </button>
+              <button
+                type="button"
+                className="taskDeleteModalBtnDanger"
+                disabled={deleteBusy}
+                onClick={() => void confirmDeleteTask()}
+              >
+                {deleteBusy ? 'Видалення…' : 'Видалити'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

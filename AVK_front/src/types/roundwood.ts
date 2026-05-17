@@ -34,6 +34,8 @@ export type RoundwoodJournalEntry = {
   at: string
   recordedBy: { username: string; sub?: string }
   logId?: number
+  /** Номер бірки, якщо подія стосується прийому/списання колоди з бірки. */
+  labelNumber?: number
   radiusMm?: number
   lengthMm?: number
   volumeM3?: number

@@ -193,6 +193,7 @@ export async function postReceiveFromLabel(req, res) {
     logId: id,
     radiusMm: item.radius,
     lengthMm: item.length,
+    labelNumber: label,
     ...(volumeOk ? { volumeM3: volumeParsed } : {}),
   })
   await writeRoundwood(state)
@@ -248,6 +249,7 @@ export async function deleteStockItem(req, res) {
     logId: item.id,
     radiusMm: item.radius,
     lengthMm: item.length,
+    ...(item.labelNumber != null ? { labelNumber: item.labelNumber } : {}),
   })
   await writeRoundwood(state)
   return res.json({ ok: true, stock: state.stock })
@@ -331,6 +333,7 @@ export async function postConsume(req, res) {
     logId: removed.id,
     radiusMm: removed.radius,
     lengthMm: removed.length,
+    ...(removed.labelNumber != null ? { labelNumber: removed.labelNumber } : {}),
     ...(removed.volumeM3 != null ? { volumeM3: removed.volumeM3 } : {}),
     taskId: taskId != null ? String(taskId) : undefined,
     taskTitle: taskTitle != null ? String(taskTitle) : undefined,

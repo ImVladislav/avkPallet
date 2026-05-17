@@ -5,7 +5,11 @@ export type CrossRow = {
   boardWidth: number
 }
 
-export type CrossRowWithThickness = CrossRow & { thicknessMm: number }
+export type CrossRowWithThickness = CrossRow & {
+  thicknessMm: number
+  /** Побічний орієнтир на карті — не з планового обсягу смуг */
+  stripKind?: 'primary' | 'secondary'
+}
 
 /** Як рахувати ширину ряду в торці: мін. відходи vs повне вміщення прямокутника смуги в коло. */
 export type BandCrossFitMode = 'min_waste' | 'max_inscribed'
@@ -305,55 +309,157 @@ export function maxThicknessFeasibleForRadius(
   return best
 }
 
-/** Крок лінійки розпилу: один горизонтальний ряд смуг на торці (зовні → всередину). */
+/** Крок лінійки розпилу: різ над штабелем, між смугами або під штабелем (зовні → всередину по мм). */
 export type ResawRulerStep = {
   cutIndex: number
+  /** Для різу між смугами — товщина внутрішньої смуги; для верху/низу — суміжна смуга штабелю. */
   thicknessMm: number
+  /** Побічна смуга тієї ж товщини, що й у колонці «Товщ.». */
+  stripKind?: 'primary' | 'secondary'
+  /** Верхній різ (над першою смугою) або нижній (під останньою). */
+  edge?: 'top' | 'bottom'
   /**
-   * Відстань від низу торця до лінії центру різу (мм, одна цифра після коми), на спад до 0 на останньому ряді.
+   * Відстань від низа торця на діаграмі (мм), та сама шкала, що вертикальна лінійка (0 внизу, 2R угорі).
    */
   heightFromBottomMm: number
   /** Зменшити показання лінійки від попереднього різу (мм); для 1-го — null. */
   decreaseScaleByMm: number | null
 }
 
+/** Геометрія одного різу для карти «Піфагор» і лінійки. */
+export type PitagoResawCutDef = {
+  cutYmm: number
+  thicknessMm: number
+  stripKind?: 'primary' | 'secondary'
+  edge?: 'top' | 'bottom'
+  /** Лише для різу між смугами (нижня смуга від шва). */
+  betweenLowerMm?: number
+  /** Лише для різу між смугами (верхня смуга від шва). */
+  betweenUpperMm?: number
+}
+
 function round1mm(x: number): number {
   return Math.round(x * 10) / 10
 }
 
+/** Верх/низ вертикальної лінійки на карті «Піфагор» (SVG y): у збігу з BandSawPage. */
+export const PITAGO_RULER_SVG_TOP = 1
+export const PITAGO_RULER_SVG_BOTTOM = 239
+export const PITAGO_SVG_CENTER_Y = 120
+export const PITAGO_SVG_LOG_RADIUS = 119
+
 /**
- * Лінійка: від низу торця (останній ряд = 0 мм), зовнішній різ — найбільше; далі на спад.
- * Усі значення округлені до 0,1 мм. Якщо вказати показання 1-го різу (мм), решта масштабуються; останній = 0.
+ * Висота центру різу від низа торця на схемі (мм), у тій самій шкалі, що вертикальна лінійка:
+ * 0 — низ (великий SVG y), 2R — гори (малий SVG y). Не плутати з «математичним» y центру кола.
+ */
+export function pitagoCutHeightFromBottomMm(
+  cutYmm: number,
+  logRadiusMm: number,
+): number {
+  if (logRadiusMm <= 0) return 0
+  const cutYSvg =
+    PITAGO_SVG_CENTER_Y + (cutYmm / logRadiusMm) * PITAGO_SVG_LOG_RADIUS
+  const span = PITAGO_RULER_SVG_BOTTOM - PITAGO_RULER_SVG_TOP
+  const diam = 2 * logRadiusMm
+  const v = round1mm((diam * (PITAGO_RULER_SVG_BOTTOM - cutYSvg)) / span)
+  return Math.max(0, Math.min(diam, v))
+}
+
+/**
+ * Усі різи карти: верхній (над 1-ю смугою), між сусідніми, нижній (під останньою).
+ * Порядок у масиві: зверху схеми вниз (не сортований).
+ */
+export function listPitagoResawCuts(
+  crossRows: CrossRowWithThickness[],
+  kerfMm: number,
+): PitagoResawCutDef[] {
+  if (!crossRows.length) return []
+  const kerf = Math.max(kerfMm, 0)
+  const out: PitagoResawCutDef[] = []
+
+  const first = crossRows[0]!
+  out.push({
+    cutYmm: first.y - first.thicknessMm / 2 - kerf / 2,
+    thicknessMm: first.thicknessMm,
+    stripKind: first.stripKind,
+    edge: 'top',
+  })
+
+  for (let i = 0; i < crossRows.length - 1; i += 1) {
+    const row = crossRows[i]!
+    const inner = crossRows[i + 1]!
+    out.push({
+      cutYmm: row.y + row.thicknessMm / 2 + kerf / 2,
+      thicknessMm: inner.thicknessMm,
+      stripKind: inner.stripKind,
+      betweenLowerMm: row.thicknessMm,
+      betweenUpperMm: inner.thicknessMm,
+    })
+  }
+
+  const last = crossRows[crossRows.length - 1]!
+  out.push({
+    cutYmm: last.y + last.thicknessMm / 2 + kerf / 2,
+    thicknessMm: last.thicknessMm,
+    stripKind: last.stripKind,
+    edge: 'bottom',
+  })
+
+  return out
+}
+
+/**
+ * Лінійка по різах (верх, між смугами, низ; основні й побічні), зовнішній різ — найбільше мм.
+ * Шкала збігається з вертикальною лінійкою на SVG: 0 мм унизу діаграми, 2R — угорі.
+ * Якщо вказати показання 1-го (зовнішнього) різу, лінійно масштабує інтервал [hₘᵢₙ, hₘₐₓ] → [hₘᵢₙ, U].
  */
 export function buildResawRulerSteps(
   crossRows: CrossRowWithThickness[],
   logRadiusMm: number,
+  kerfMm: number,
   firstCutMmRaw: string,
 ): ResawRulerStep[] {
-  if (!crossRows.length || logRadiusMm <= 0) return []
-
-  const fromBottomMm = crossRows.map((r) => logRadiusMm - r.y)
-  const bottomRefMm = fromBottomMm[crossRows.length - 1]!
-  const relMm = fromBottomMm.map((d) => d - bottomRefMm)
+  if (crossRows.length < 1 || logRadiusMm <= 0) return []
 
   const t = firstCutMmRaw.trim().replace(',', '.')
   const userFirst = t === '' ? NaN : Number(t)
   const userFirstMm = Number.isFinite(userFirst) ? round1mm(userFirst) : NaN
   const hasCalib = Number.isFinite(userFirstMm) && userFirstMm > 0
-  const rel0 = relMm[0]!
 
-  const heightMmAt = (i: number): number => {
-    if (hasCalib && rel0 > 1e-6) {
-      return round1mm((relMm[i]! / rel0) * userFirstMm)
-    }
-    return round1mm(relMm[i]!)
+  const defs = listPitagoResawCuts(crossRows, kerfMm)
+  type RawCut = {
+    thicknessMm: number
+    stripKind?: 'primary' | 'secondary'
+    edge?: 'top' | 'bottom'
+    heightAbs: number
   }
 
-  const heightsMm = crossRows.map((_, i) => heightMmAt(i))
+  const raw: RawCut[] = defs.map((d) => ({
+    thicknessMm: d.thicknessMm,
+    stripKind: d.stripKind,
+    edge: d.edge,
+    heightAbs: pitagoCutHeightFromBottomMm(d.cutYmm, logRadiusMm),
+  }))
 
-  return crossRows.map((row, i) => ({
+  raw.sort((a, b) => b.heightAbs - a.heightAbs)
+  const hMin = raw[raw.length - 1]!.heightAbs
+  const hMax = raw[0]!.heightAbs
+  const span = hMax - hMin
+
+  const mapHeight = (h: number): number => {
+    if (hasCalib && span > 1e-6) {
+      return round1mm(hMin + ((h - hMin) / span) * (userFirstMm - hMin))
+    }
+    return round1mm(h)
+  }
+
+  const heightsMm = raw.map((r) => mapHeight(r.heightAbs))
+
+  return raw.map((r, i) => ({
     cutIndex: i + 1,
-    thicknessMm: row.thicknessMm,
+    thicknessMm: r.thicknessMm,
+    stripKind: r.stripKind,
+    edge: r.edge,
     heightFromBottomMm: heightsMm[i]!,
     decreaseScaleByMm:
       i > 0 ? round1mm(heightsMm[i - 1]! - heightsMm[i]!) : null,

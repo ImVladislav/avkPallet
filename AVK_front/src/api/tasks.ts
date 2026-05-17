@@ -181,6 +181,21 @@ export async function recordCircularSawCut(
   return data.task
 }
 
+/** Циркулярка: скасувати останній запис розкрою. */
+export async function undoLastCircularSawCut(taskId: string): Promise<WorkTask> {
+  const res = await fetch(apiUrl(`/api/tasks/${encodeURIComponent(taskId)}/circular-saw/undo-last`), {
+    method: 'POST',
+    headers: headersJson(),
+  })
+  const data = (await res.json().catch(() => ({}))) as { task?: WorkTask; error?: string }
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Не вдалося скасувати запис')
+  }
+  if (!data.task) throw new Error('Некоректна відповідь сервера')
+  notifyWorkTasksChanged()
+  return data.task
+}
+
 /** Збірка піддонів: списати готові деталі з циркулярки. */
 export async function buildPallets(
   taskId: string,

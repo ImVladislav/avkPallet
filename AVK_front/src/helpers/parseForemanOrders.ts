@@ -40,11 +40,59 @@ export function parseForemanOrderText(raw: string, unitDefault: 'mm' | 'cm'): { 
   return { ok: true, lines: mergeOrderLines(result) }
 }
 
+/** Порожній текст замовлення вважаємо допустимим: попит може бути лише в `dimensionRows` / плані. */
+export function parseForemanOrderTextOrEmpty(
+  raw: string,
+  unitDefault: 'mm' | 'cm',
+): { ok: true; lines: OrderLine[] } | { ok: false; error: string } {
+  if (!String(raw ?? '').trim()) return { ok: true, lines: [] }
+  return parseForemanOrderText(raw, unitDefault)
+}
+
+/**
+ * Товщини смуг (мм) з побічних рядків форми (з qty або без) — для додаткового списання / складу
+ * на стрічковій пилі: беремо обидві сторони перетину.
+ */
+export function adHocBandThicknessesFromDimensionRows(
+  dimensionRows: DimensionRowInput[] | null | undefined,
+  unit: 'mm' | 'cm',
+): Set<number> {
+  const set = new Set<number>()
+  if (!Array.isArray(dimensionRows)) return set
+  for (const r of dimensionRows) {
+    const qtyEmpty = !String(r.qty ?? '').trim()
+    if (r.kind !== 'secondary' && !qtyEmpty) continue
+    const cs = crossSectionMmFromDimensionRow(r, unit)
+    if (!cs) continue
+    const a = Math.round(cs.aMm)
+    const b = Math.round(cs.bMm)
+    if (a > 0) set.add(a)
+    if (b > 0) set.add(b)
+  }
+  return set
+}
+
 export type DimensionRowInput = {
+  /** Якщо `secondary` і `qty` порожнє — рядок лишається лише в `dimensionRows`, у план як фіксований попит не потрапляє. */
+  kind?: 'main' | 'secondary'
   qty: string
   height: string
   width: string
   length: string
+}
+
+/** Перетин (мм) з рядка форми — для побічних без кількості в карті розкрою. */
+export function crossSectionMmFromDimensionRow(
+  r: DimensionRowInput,
+  unit: 'mm' | 'cm',
+): { aMm: number; bMm: number } | null {
+  const rawH = Number(String(r.height ?? '').replace(',', '.'))
+  const rawW = Number(String(r.width ?? '').replace(',', '.'))
+  if (!Number.isFinite(rawH) || !Number.isFinite(rawW)) return null
+  const aMm = toMm(rawH, unit)
+  const bMm = secondCrossSectionMm(rawH, rawW, unit, unit)
+  if (!Number.isFinite(aMm) || !Number.isFinite(bMm) || aMm <= 0 || bMm <= 0) return null
+  return { aMm, bMm }
 }
 
 /** Об’єднує рядки з однаковою парою (товщина смуги, ширина бруса) і довжиною — у тому порядку, як у замовленні. */
@@ -78,7 +126,10 @@ export function orderLinesFromDimensionRows(
   const lines: OrderLine[] = []
   for (let i = 0; i < rows.length; i += 1) {
     const r = rows[i]
-    const qty = Math.round(Number(String(r.qty).replace(',', '.')))
+    const rowKind = r.kind === 'secondary' ? 'secondary' : 'main'
+    const qtyStr = String(r.qty ?? '').trim()
+    const openSecondaryQty = rowKind === 'secondary' && qtyStr === ''
+
     const rawH = Number(String(r.height).replace(',', '.'))
     const rawW = Number(String(r.width).replace(',', '.'))
     const aMm = toMm(rawH, unitDefault)
@@ -87,20 +138,55 @@ export function orderLinesFromDimensionRows(
       ? toMm(Number(String(r.length).replace(',', '.')), unitDefault)
       : 0
 
-    if (!Number.isFinite(qty) || qty <= 0) {
-      return { ok: false, error: `Рядок ${i + 1}: кількість має бути > 0` }
-    }
     if (!Number.isFinite(aMm) || !Number.isFinite(bMm) || aMm <= 0 || bMm <= 0) {
-      return { ok: false, error: `Рядок ${i + 1}: обидві сторони перетину мають бути > 0` }
+      return {
+        ok: false,
+        error: `Рядок ${i + 1}: обидві сторони перетину мають бути > 0`,
+      }
     }
     if (requireBoardLength) {
       if (!Number.isFinite(lengthMm) || lengthMm <= 0) {
-        return { ok: false, error: `Рядок ${i + 1}: довжина дошки (вздовж колоди) має бути > 0` }
+        return {
+          ok: false,
+          error: `Рядок ${i + 1}: довжина дошки (вздовж колоди) має бути > 0`,
+        }
+      }
+    }
+
+    if (openSecondaryQty) {
+      continue
+    }
+
+    const qty = Math.round(Number(qtyStr.replace(',', '.')))
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return {
+        ok: false,
+        error:
+          rowKind === 'secondary'
+            ? `Рядок ${i + 1} (побічний): кількість має бути числом > 0 або залиште поле порожнім («скільки вийде»)`
+            : `Рядок ${i + 1}: кількість має бути > 0`,
       }
     }
     lines.push({ qty, aMm, bMm, lengthMm })
   }
-  if (lines.length === 0) return { ok: false, error: 'Додайте хоча б один рядок замовлення.' }
+  if (lines.length === 0) {
+    if (rows.length === 0) {
+      return { ok: false, error: 'Додайте хоча б один рядок розмірів.' }
+    }
+    const onlyOpenSecondaries = rows.every((r) => {
+      const rk = r.kind === 'secondary' ? 'secondary' : 'main'
+      const q = String(r.qty ?? '').trim()
+      return rk === 'secondary' && q === ''
+    })
+    if (!onlyOpenSecondaries) {
+      return {
+        ok: false,
+        error:
+          'Потрібен хоча б один рядок із зазначеною кількістю. Побічні рядки без кількості не враховуються в плані як замовлення.',
+      }
+    }
+    return { ok: true, lines: [] }
+  }
   return { ok: true, lines: mergeOrderLines(lines) }
 }
 
@@ -145,6 +231,50 @@ export function orderLengthMmForThicknessAndBoardWidth(
   return best?.L ?? null
 }
 
+/**
+ * Геометрія рядка форми (перетин + довжина вздовж колоди), мм.
+ * Використовується для циркулярки, коли побічний рядок без кількості не потрапив у `orderText`.
+ */
+export function boardCrossAndLengthFromDimensionRow(
+  r: DimensionRowInput,
+  unit: 'mm' | 'cm',
+): { aMm: number; bMm: number; lengthMm: number } | null {
+  const rawH = Number(String(r.height ?? '').replace(',', '.'))
+  const rawW = Number(String(r.width ?? '').replace(',', '.'))
+  const rawL = Number(String(r.length ?? '').replace(',', '.'))
+  if (!Number.isFinite(rawH) || !Number.isFinite(rawW) || !Number.isFinite(rawL)) return null
+  const aMm = toMm(rawH, unit)
+  const bMm = secondCrossSectionMm(rawH, rawW, unit, unit)
+  const lengthMm = toMm(rawL, unit)
+  if (!Number.isFinite(aMm) || !Number.isFinite(bMm) || aMm <= 0 || bMm <= 0) return null
+  if (!Number.isFinite(lengthMm) || lengthMm <= 0) return null
+  return { aMm, bMm, lengthMm }
+}
+
+/**
+ * Довжина заготовки з `dimensionRows`, коли в тексті замовлення немає відповідного рядка
+ * (типово — побічний брус без фіксованої кількості).
+ */
+export function orderLengthMmFromDimensionRows(
+  rows: DimensionRowInput[] | undefined,
+  unit: 'mm' | 'cm',
+  thicknessMm: number,
+  boardWidthMm: number,
+): number | null {
+  if (!rows?.length) return null
+  const tw = Math.round(thicknessMm)
+  const ww = Math.round(boardWidthMm)
+  for (const r of rows) {
+    const g = boardCrossAndLengthFromDimensionRow(r, unit)
+    if (!g) continue
+    const syn: OrderLine = { qty: 1, aMm: g.aMm, bMm: g.bMm, lengthMm: g.lengthMm }
+    const wAcross = boardWidthAcrossStripForThickness(syn, tw)
+    if (wAcross == null || Math.round(wAcross) !== ww) continue
+    return Math.round(g.lengthMm)
+  }
+  return null
+}
+
 export function formatOrderLinesAsText(lines: OrderLine[]): string {
   return lines
     .map((l) => {
@@ -166,6 +296,37 @@ export function formatOrderLinesAsTextCm(lines: OrderLine[]): string {
       const base = `${l.qty} ${fmt(l.aMm)} ${fmt(l.bMm)}`
       const L = Math.round(l.lengthMm ?? 0)
       return L > 0 ? `${base} ${fmt(L)}` : base
+    })
+    .join('\n')
+}
+
+/**
+ * Для карток завдань: «1 шт 5×5 см»; якщо є довжина — «1 шт 5×5 см, 120 см».
+ * Повертає null, якщо текст порожній або не розпарсився.
+ */
+export function formatOrderTextAsHumanLines(
+  raw: string,
+  unitDefault: 'mm' | 'cm',
+): string | null {
+  const trimmed = String(raw ?? '').trim()
+  if (!trimmed) return null
+  const parsed = parseForemanOrderText(raw, unitDefault)
+  if (!parsed.ok) return null
+  const u = unitDefault === 'cm' ? 'см' : 'мм'
+  const fmtFromMm = (mm: number) => {
+    if (unitDefault === 'cm') {
+      const c = mm / 10
+      return Number.isInteger(c) ? String(c) : String(Number(c.toFixed(1)))
+    }
+    return String(Math.round(mm))
+  }
+  return parsed.lines
+    .map((l) => {
+      const cross = `${fmtFromMm(l.aMm)}×${fmtFromMm(l.bMm)}`
+      const base = `${l.qty} шт ${cross} ${u}`
+      const L = Math.round(l.lengthMm ?? 0)
+      if (L <= 0) return base
+      return `${base}, ${fmtFromMm(L)} ${u}`
     })
     .join('\n')
 }

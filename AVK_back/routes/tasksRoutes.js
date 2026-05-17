@@ -10,6 +10,7 @@ import {
   recordStripSawCut,
   patchStripSawRemainder,
   recordCircularSawCut,
+  undoLastCircularSawCut,
   buildPallets,
 } from '../controllers/tasksController.js'
 
@@ -24,6 +25,7 @@ router.post('/:id/band-cut', requireAuth, recordBandCut)
 router.post('/:id/strip-saw/cut', requireAuth, recordStripSawCut)
 router.patch('/:id/strip-saw/remainder', requireAuth, patchStripSawRemainder)
 router.post('/:id/circular-saw/cut', requireAuth, recordCircularSawCut)
+router.post('/:id/circular-saw/undo-last', requireAuth, undoLastCircularSawCut)
 router.post('/:id/pallets/build', requireAuth, buildPallets)
 
 export default router

@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { TAB_LABELS, TAB_ORDER, TAB_PATHS, pathToTab } from '../../routes/paths'
+import { subPageBackTarget } from '../../routes/subPageBack'
 import '../../styles/layout.css'
 
 export function AppLayout() {
   const { user, logout, canTab } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const burgerRef = useRef<HTMLButtonElement | null>(null)
 
   const tab = pathToTab(location.pathname)
   const pageTitle = tab ? TAB_LABELS[tab] : 'Розділ'
+  const subBack = subPageBackTarget(location.pathname)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -98,6 +101,17 @@ export function AppLayout() {
               <span className="burgerLine" />
               <span className="burgerLine" />
             </button>
+            {subBack ? (
+              <button
+                type="button"
+                className="ghost appHeaderBackBtn"
+                onClick={() => navigate(subBack.to)}
+                title={subBack.title}
+                aria-label={subBack.title}
+              >
+                ← Назад
+              </button>
+            ) : null}
             <div className="appHeaderTitles">
               <h1>{pageTitle}</h1>
             </div>

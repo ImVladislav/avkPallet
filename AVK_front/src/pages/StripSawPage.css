@@ -26,6 +26,14 @@
   background: #f0e8dc;
 }
 
+.stripRowSecondaryBadge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b5344;
+  opacity: 0.92;
+  white-space: nowrap;
+}
+
 .stripSimpleInput {
   width: 96px;
   border: 1px solid #c5a37b;

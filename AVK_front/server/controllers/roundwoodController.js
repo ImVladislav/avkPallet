@@ -168,6 +168,9 @@ export async function postReceiveFromLabel(req, res) {
   const id = clientId != null ? newNumericLogId(clientId) : Date.now()
 
   const state = await readRoundwood()
+  if (state.stock.some((s) => Math.round(Number(s.labelNumber)) === label)) {
+    return res.status(409).json({ error: `Колода з біркою ${label} уже є на складі` })
+  }
   if (state.stock.some((s) => s.id === id)) {
     return res.status(409).json({ error: 'Колода з таким id уже є на складі' })
   }
@@ -178,6 +181,7 @@ export async function postReceiveFromLabel(req, res) {
     radius: radiusMm,
     length: lengthMm,
     createdAt: now,
+    labelNumber: label,
     ...(volumeOk ? { volumeM3: volumeParsed } : {}),
   }
   state.stock.push(item)
@@ -189,6 +193,7 @@ export async function postReceiveFromLabel(req, res) {
     logId: id,
     radiusMm: item.radius,
     lengthMm: item.length,
+    labelNumber: label,
     ...(volumeOk ? { volumeM3: volumeParsed } : {}),
   })
   await writeRoundwood(state)
@@ -244,6 +249,7 @@ export async function deleteStockItem(req, res) {
     logId: item.id,
     radiusMm: item.radius,
     lengthMm: item.length,
+    ...(item.labelNumber != null ? { labelNumber: item.labelNumber } : {}),
   })
   await writeRoundwood(state)
   return res.json({ ok: true, stock: state.stock })
@@ -327,6 +333,7 @@ export async function postConsume(req, res) {
     logId: removed.id,
     radiusMm: removed.radius,
     lengthMm: removed.length,
+    ...(removed.labelNumber != null ? { labelNumber: removed.labelNumber } : {}),
     ...(removed.volumeM3 != null ? { volumeM3: removed.volumeM3 } : {}),
     taskId: taskId != null ? String(taskId) : undefined,
     taskTitle: taskTitle != null ? String(taskTitle) : undefined,

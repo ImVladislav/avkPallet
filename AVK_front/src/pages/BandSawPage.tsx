@@ -10,7 +10,9 @@ import { useAuth } from '../context/AuthContext'
 import {
   BAND_CROSS_FIT_STORAGE_KEY,
   buildResawRulerSteps,
+  listPitagoResawCuts,
   maxThicknessFeasibleForRadius,
+  pitagoCutHeightFromBottomMm,
   rowChordMm,
   type BandCrossFitMode,
   type CrossRowWithThickness,
@@ -22,8 +24,9 @@ import {
 } from '../helpers/foremanPlan'
 import { boardsPerPhysicalStrip } from '../helpers/alongLogPieces'
 import {
-  orderPieceLengthsForThicknessMm,
-  parseForemanOrderText,
+  parseForemanOrderTextOrEmpty,
+  crossSectionMmFromDimensionRow,
+  adHocBandThicknessesFromDimensionRows,
 } from '../helpers/parseForemanOrders'
 import { sortLogsLargeFirst } from '../helpers/logsStorage'
 import type { LogItem } from '../types/roundwood'
@@ -88,6 +91,7 @@ function buildPitagoBandCrossSection(
   thicknessesMm: number[],
   kerfMm: number,
   fit: BandCrossFitMode,
+  secondaryThicknessMmSet: Set<number> = new Set(),
 ): CrossRowWithThickness[] {
   const filtered = thicknessesMm.filter((t) => t > 0)
   if (radiusMm <= 0 || !filtered.length) return []
@@ -120,7 +124,10 @@ function buildPitagoBandCrossSection(
   for (const thicknessMm of stack) {
     const y = cursor + thicknessMm / 2
     const row = buildPitagoCrossRow(radiusMm, y, thicknessMm, kerfMm, fit)
-    if (row) rows.push(row)
+    if (row) {
+      const stripKind = secondaryThicknessMmSet.has(thicknessMm) ? 'secondary' : 'primary'
+      rows.push({ ...row, thicknessMm, stripKind })
+    }
     cursor += thicknessMm + kerf
   }
   return rows
@@ -156,7 +163,6 @@ export function BandSawPage() {
   const [resawFirstCutMm, setResawFirstCutMm] = useState('')
 
   const bandCutSeedKeyRef = useRef<string | null>(null)
-  const [bandCalcOpen, setBandCalcOpen] = useState(false)
   const [hideCompletedBandRows, setHideCompletedBandRows] = useState(false)
   const scannerVideoRef = useRef<HTMLVideoElement | null>(null)
   const scannerFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -253,6 +259,14 @@ export function BandSawPage() {
     )
   }, [selectedTask, selectedLog, effectiveKerfMm, bandCrossFit])
 
+  const adHocBandThicknessMmSet = useMemo(() => {
+    if (!selectedTask?.dimensionRows?.length) return new Set<number>()
+    return adHocBandThicknessesFromDimensionRows(
+      selectedTask.dimensionRows,
+      selectedTask.unit === 'cm' ? 'cm' : 'mm',
+    )
+  }, [selectedTask])
+
   const bandCompletedCount = useMemo(
     () => bandSortedForLog.filter((b) => bandRemainingQty(b) === 0).length,
     [bandSortedForLog],
@@ -260,8 +274,21 @@ export function BandSawPage() {
 
   const bandTableRows = useMemo(() => {
     if (!hideCompletedBandRows) return bandSortedForLog
-    return bandSortedForLog.filter((b) => bandRemainingQty(b) > 0)
-  }, [bandSortedForLog, hideCompletedBandRows])
+    return bandSortedForLog.filter((b) => {
+      if (bandRemainingQty(b) > 0) return true
+      return adHocBandThicknessMmSet.has(b.thicknessMm)
+    })
+  }, [bandSortedForLog, hideCompletedBandRows, adHocBandThicknessMmSet])
+
+  const bandUnifiedTableRows = useMemo(() => {
+    const planPart = bandTableRows.map((b) => ({ kind: 'plan' as const, b }))
+    const planTh = new Set<number>((selectedTask?.plan.band ?? []).map((row) => row.thicknessMm))
+    const adhocOnly = [...adHocBandThicknessMmSet]
+      .filter((t) => !planTh.has(t))
+      .sort((a, b) => b - a)
+    const adhocPart = adhocOnly.map((thicknessMm) => ({ kind: 'adhoc' as const, thicknessMm }))
+    return [...planPart, ...adhocPart]
+  }, [bandTableRows, adHocBandThicknessMmSet, selectedTask?.plan.band])
 
   const preferredThicknessMm = bandSortedForLog[0]?.thicknessMm
 
@@ -278,17 +305,59 @@ export function BandSawPage() {
       })
   }, [bandSortedForLog])
 
-  /** Порядок товщин на одному торці (зовні → всередину): настоювання рядів у схемі. */
-  const stackThicknessesMm = useMemo(() => {
-    const manual = Number(boardThickness) || 0
-    if (!selectedTask?.plan.band.length || !bandFullOrderForMap.length) {
-      return manual > 0 ? [manual] : []
+  /** Товщини (мм) з побічних рядків форми бригадира — для орієнтиру на карті торця. */
+  const openSecondaryStripCandidatesMm = useMemo(() => {
+    if (!selectedTask?.dimensionRows?.length) return []
+    const u = selectedTask.unit === 'cm' ? 'cm' : 'mm'
+    const uniq = new Set<number>()
+    for (const r of selectedTask.dimensionRows) {
+      if (r.kind !== 'secondary' || String(r.qty ?? '').trim() !== '') continue
+      const cs = crossSectionMmFromDimensionRow(
+        { kind: r.kind, qty: r.qty, height: r.height, width: r.width, length: r.length },
+        u,
+      )
+      if (!cs) continue
+      const a = Math.round(cs.aMm)
+      const b = Math.round(cs.bMm)
+      if (a > 0) uniq.add(a)
+      if (b > 0) uniq.add(b)
     }
+    return [...uniq].sort((x, y) => y - x)
+  }, [selectedTask])
+
+  const { stackThicknessesMm, secondaryStripThicknessMmSet } = useMemo(() => {
+    const manual = Number(boardThickness) || 0
+    const candidates = openSecondaryStripCandidatesMm
+
+    const extrasNotInPlan = (planThicknesses: number[]) => {
+      const planSet = new Set(planThicknesses)
+      return candidates.filter((t) => !planSet.has(t)).sort((a, b) => b - a)
+    }
+
+    if (!selectedTask?.plan.band.length || !bandFullOrderForMap.length) {
+      const base: number[] = manual > 0 ? [manual] : []
+      const extra = extrasNotInPlan(base)
+      const stack =
+        base.length && extra.length ? [...base, ...extra] : base.length ? base : extra
+      return { stackThicknessesMm: stack, secondaryStripThicknessMmSet: new Set(extra) }
+    }
+
     const seq = bandFullOrderForMap
       .filter((b) => b.feasible !== false && (b.boardsFromOneCrossSection ?? 0) > 0)
       .map((b) => b.thicknessMm)
-    return seq.length > 0 ? seq : manual > 0 ? [manual] : []
-  }, [selectedTask, bandFullOrderForMap, boardThickness])
+
+    if (seq.length === 0) {
+      const base: number[] = manual > 0 ? [manual] : []
+      const extra = extrasNotInPlan(base)
+      const stack =
+        base.length && extra.length ? [...base, ...extra] : base.length ? base : extra
+      return { stackThicknessesMm: stack, secondaryStripThicknessMmSet: new Set(extra) }
+    }
+
+    const extra = extrasNotInPlan(seq)
+    const stack = extra.length ? [...seq, ...extra] : seq
+    return { stackThicknessesMm: stack, secondaryStripThicknessMmSet: new Set(extra) }
+  }, [selectedTask, bandFullOrderForMap, boardThickness, openSecondaryStripCandidatesMm])
 
   /** Для завдання: товщина схеми торця — перша виконувана з порядку фізичного різання (усі товщини вже зведені в цей порядок вище). */
   const displayThicknessMm = useMemo(() => {
@@ -304,7 +373,7 @@ export function BandSawPage() {
 
   const taskOrderLines = useMemo(() => {
     if (!selectedTask) return null
-    const p = parseForemanOrderText(
+    const p = parseForemanOrderTextOrEmpty(
       selectedTask.orderText,
       selectedTask.unit === 'cm' ? 'cm' : 'mm',
     )
@@ -325,58 +394,42 @@ export function BandSawPage() {
   /** Скільки деталей по довжині дає одна знята смуга (для обраної колоди). */
   const boardsPerStripByThickness = useMemo(() => {
     const m = new Map<number, number>()
-    if (!selectedLog || !taskOrderLines?.length || !selectedTask) return m
+    if (!selectedLog || !selectedTask) return m
     const kerf = selectedTask.kerfCircMm
-    for (const row of selectedTask.plan.band) {
+    const lines = taskOrderLines ?? []
+    const thSet = new Set<number>()
+    for (const row of selectedTask.plan.band) thSet.add(row.thicknessMm)
+    for (const t of adHocBandThicknessMmSet) thSet.add(t)
+    for (const th of thSet) {
       m.set(
-        row.thicknessMm,
-        boardsPerPhysicalStrip(taskOrderLines, row.thicknessMm, selectedLog.length, kerf),
+        th,
+        lines.length ? boardsPerPhysicalStrip(lines, th, selectedLog.length, kerf) : 1,
       )
     }
     return m
-  }, [selectedTask, taskOrderLines, selectedLog])
+  }, [selectedTask, taskOrderLines, selectedLog, adHocBandThicknessMmSet])
 
-  useEffect(() => {
-    if (!bandCalcOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setBandCalcOpen(false)
+  /**
+   * Для товщин, яких немає в plan.band, бекенд не піднімає qtyDone — натомість смуги в stripInventory.
+   * Конвертуємо на «дошки по довжині» так само, як при записі recordBandCut.
+   */
+  const bandBoardsDoneFromStripInventoryByThickness = useMemo(() => {
+    const m = new Map<number, number>()
+    if (!selectedTask?.stripInventory?.length) return m
+    const lines = taskOrderLines ?? []
+    const kerf = selectedTask.kerfCircMm
+    for (const e of selectedTask.stripInventory) {
+      const th = Math.round(Number(e.thicknessMm))
+      if (!Number.isFinite(th) || th <= 0) continue
+      const qty = Math.round(Number(e.qty))
+      if (!Number.isFinite(qty) || qty <= 0) continue
+      const L = Math.round(Number(e.logLengthMm))
+      const logLen = L > 0 ? L : 4000
+      const per = lines.length ? boardsPerPhysicalStrip(lines, th, logLen, kerf) : 1
+      m.set(th, (m.get(th) ?? 0) + qty * per)
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [bandCalcOpen])
-
-  const bandCalcBreakdown = useMemo(() => {
-    if (!selectedLog || !selectedTask || !taskOrderLines?.length) return []
-    return bandSortedForLog
-      .filter((b) => bandRemainingQty(b) > 0)
-      .map((b) => {
-        const ok = b.feasible !== false && (b.boardsFromOneCrossSection ?? 0) > 0
-        const left = bandRemainingQty(b)
-        const per = boardsPerStripByThickness.get(b.thicknessMm) ?? 1
-        const maxStrips = per > 0 ? Math.ceil(left / per) : left
-        const faceBoardsRaw = b.boardsFromOneCrossSection ?? 0
-        const suggested = ok ? maxStrips : 0
-        const piecesIfSuggested = ok ? Math.min(left, suggested * per) : 0
-        const lengthsForTh = orderPieceLengthsForThicknessMm(taskOrderLines, b.thicknessMm)
-        return {
-          thicknessMm: b.thicknessMm,
-          ok,
-          left,
-          per,
-          maxStrips,
-          faceBoards: faceBoardsRaw,
-          suggested,
-          piecesIfSuggested,
-          lengthsForTh,
-        }
-      })
-  }, [
-    selectedLog,
-    selectedTask,
-    taskOrderLines,
-    bandSortedForLog,
-    boardsPerStripByThickness,
-  ])
+    return m
+  }, [selectedTask, taskOrderLines])
 
   const crossRows = useMemo(() => {
     if (!selectedLog || !stackThicknessesMm.length) return []
@@ -385,12 +438,24 @@ export function BandSawPage() {
       stackThicknessesMm,
       effectiveKerfMm,
       bandCrossFit,
+      secondaryStripThicknessMmSet,
     )
-  }, [selectedLog, stackThicknessesMm, effectiveKerfMm, bandCrossFit])
+  }, [selectedLog, stackThicknessesMm, effectiveKerfMm, bandCrossFit, secondaryStripThicknessMmSet])
 
   const bandAutoCutByThickness = useMemo(() => {
     const m = new Map<number, number>()
     for (const row of crossRows) {
+      if (row.stripKind === 'secondary') continue
+      m.set(row.thicknessMm, (m.get(row.thicknessMm) ?? 0) + 1)
+    }
+    return m
+  }, [crossRows])
+
+  /** Побічні смуги на карті розкрою (торець) по товщині — для таблиці й чернетки списання. */
+  const secondaryStripsOnMapByThickness = useMemo(() => {
+    const m = new Map<number, number>()
+    for (const row of crossRows) {
+      if (row.stripKind !== 'secondary') continue
       m.set(row.thicknessMm, (m.get(row.thicknessMm) ?? 0) + 1)
     }
     return m
@@ -401,19 +466,39 @@ export function BandSawPage() {
     const out: Record<number, string> = {}
     for (const b of bandSortedForLog) {
       const left = bandRemainingQty(b)
-      const autoCut = bandAutoCutByThickness.get(b.thicknessMm) ?? 0
       const per = Math.max(1, boardsPerStripByThickness.get(b.thicknessMm) ?? 1)
+      const primaryAuto = bandAutoCutByThickness.get(b.thicknessMm) ?? 0
+      const secondaryAuto = secondaryStripsOnMapByThickness.get(b.thicknessMm) ?? 0
+      const autoCut = primaryAuto + secondaryAuto
       const maxStripsByNorm = left > 0 ? Math.max(1, Math.ceil(left / per)) : 0
-      if (left <= 0 || autoCut <= 0 || maxStripsByNorm <= 0) continue
-      out[b.thicknessMm] = String(Math.min(maxStripsByNorm, autoCut))
+      const adHocTh = adHocBandThicknessMmSet.has(b.thicknessMm)
+
+      if (left > 0 && autoCut > 0 && maxStripsByNorm > 0) {
+        out[b.thicknessMm] = String(Math.min(maxStripsByNorm, autoCut))
+        continue
+      }
+      if (left <= 0 && adHocTh && secondaryAuto > 0) {
+        out[b.thicknessMm] = String(secondaryAuto)
+      }
     }
+
+    const planTh = new Set(bandSortedForLog.map((b) => b.thicknessMm))
+    for (const th of adHocBandThicknessMmSet) {
+      if (planTh.has(th)) continue
+      const sec = secondaryStripsOnMapByThickness.get(th) ?? 0
+      if (sec <= 0) continue
+      out[th] = String(sec)
+    }
+
     return Object.keys(out).length > 0 ? out : null
   }, [
     selectedLog,
     selectedTask,
     bandSortedForLog,
     bandAutoCutByThickness,
+    secondaryStripsOnMapByThickness,
     boardsPerStripByThickness,
+    adHocBandThicknessMmSet,
   ])
 
   useEffect(() => {
@@ -430,8 +515,13 @@ export function BandSawPage() {
 
   const resawRulerSteps = useMemo(() => {
     if (!selectedLog || !crossRows.length) return []
-    return buildResawRulerSteps(crossRows, selectedLog.radius, resawFirstCutMm)
-  }, [selectedLog, crossRows, resawFirstCutMm])
+    return buildResawRulerSteps(crossRows, selectedLog.radius, effectiveKerfMm, resawFirstCutMm)
+  }, [selectedLog, crossRows, effectiveKerfMm, resawFirstCutMm])
+
+  const pitagoResawCutDefs = useMemo(
+    () => listPitagoResawCuts(crossRows, effectiveKerfMm),
+    [crossRows, effectiveKerfMm],
+  )
 
   const activeBandRow = useMemo(() => {
     if (!bandSortedForLog.length) return null
@@ -752,28 +842,17 @@ export function BandSawPage() {
 
         {selectedTask && bandSortedForLog.length > 0 && (
           <>
-            {(selectedLog || bandCompletedCount > 0) && (
+            {bandCompletedCount > 0 && (
               <div className="bandTableActionsOnly">
-                {selectedLog && (
-                  <button
-                    type="button"
-                    className="ghost bandCalcOpenBtn"
-                    onClick={() => setBandCalcOpen(true)}
-                  >
-                    Як пораховано
-                  </button>
-                )}
-                {bandCompletedCount > 0 && (
-                  <button
-                    type="button"
-                    className="ghost bandHideDoneBtn"
-                    onClick={() => setHideCompletedBandRows((v) => !v)}
-                  >
-                    {hideCompletedBandRows
-                      ? `Показати виконані (${bandCompletedCount})`
-                      : 'Сховати виконані'}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="ghost bandHideDoneBtn"
+                  onClick={() => setHideCompletedBandRows((v) => !v)}
+                >
+                  {hideCompletedBandRows
+                    ? `Показати виконані (${bandCompletedCount})`
+                    : 'Сховати виконані'}
+                </button>
               </div>
             )}
             <div className="bandAllThTableWrap">
@@ -794,22 +873,116 @@ export function BandSawPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bandTableRows.length === 0 ? (
+                  {bandUnifiedTableRows.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="bandTableEmptyRow">
-                        Усі позиції за цим завданням уже виконані за нормою стрічкової пили — натисніть «Показати
-                        виконані», щоб знову побачити рядки, або переходьте до закриття на багатопилі.
+                        Усі позиції за нормою виконані і немає побічних товщин з форми бригадира — натисніть «Показати
+                        виконані», щоб знову побачити рядки основного плану, або переходьте до закриття на багатопилі.
                       </td>
                     </tr>
                   ) : null}
-                  {bandTableRows.map((b) => {
+                  {bandUnifiedTableRows.map((row) => {
+                    if (row.kind === 'adhoc') {
+                      const th = row.thicknessMm
+                      const perStrip = Math.max(1, boardsPerStripByThickness.get(th) ?? 1)
+                      const stripsOnMap = secondaryStripsOnMapByThickness.get(th) ?? 0
+                      const needBoards = stripsOnMap * perStrip
+                      const done = bandBoardsDoneFromStripInventoryByThickness.get(th) ?? 0
+                      const left = Math.max(0, needBoards - done)
+                      const draftRaw = Number(bandCutDraft[th])
+                      const draftStrips =
+                        Number.isFinite(draftRaw) && draftRaw > 0 ? Math.round(draftRaw) : 0
+                      const previewBoards =
+                        draftStrips > 0 ? Math.min(left, draftStrips * perStrip) : 0
+                      const previewLeft = Math.max(0, left - previewBoards)
+                      const effectiveLeft = draftStrips > 0 ? previewLeft : left
+                      const maxStripsInput = Math.max(stripsOnMap, 500)
+                      return (
+                        <tr key={`adhoc-${th}`} className="bandRowAdhoc">
+                          <td>
+                            <strong>{fmtCm(th)}</strong>
+                            <span
+                              className="bandRowAdhocBadge"
+                              title="Товщина з побічного рядка форми (з кількістю або без — лише розмір)"
+                            >
+                              {' '}
+                              побічний
+                            </span>
+                          </td>
+                          <td>
+                            <strong>{needBoards}</strong>
+                            {stripsOnMap > 0 ? (
+                              <span className="bandStripsOnMapHint" title="Смуг на карті розкрою">
+                                {' '}
+                                ({stripsOnMap} смуг)
+                              </span>
+                            ) : null}
+                          </td>
+                          <td>
+                            <strong>{done}</strong>
+                          </td>
+                          <td>{effectiveLeft}</td>
+                          <td>
+                            {needBoards > 0 && draftStrips > 0 && effectiveLeft === 0 ? (
+                              <div className="bandDoneStatus">
+                                <span className="bandStatusDone">Буде передано</span>
+                                <span className="bandDoneForCloseHint">
+                                  після натискання «Передати на багатопил»
+                                </span>
+                              </div>
+                            ) : needBoards > 0 && left === 0 ? (
+                              <div className="bandDoneStatus">
+                                <span className="bandStatusDone">З норми карти</span>
+                                <span className="bandDoneForCloseHint">
+                                  смуги передані на багатопил (за обліком дощок)
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="bandStatusSecondary">
+                                Побічний
+                                {stripsOnMap > 0 ? (
+                                  <span className="bandStatusSecondarySub"> · на карті {stripsOnMap} смуг</span>
+                                ) : null}
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min={0}
+                              step={1}
+                              max={maxStripsInput}
+                              className="bandCutQtyInput"
+                              value={bandCutDraft[th] ?? ''}
+                              onChange={(e) =>
+                                setBandCutDraft((prev) => ({
+                                  ...prev,
+                                  [th]: e.target.value,
+                                }))
+                              }
+                              placeholder="0"
+                              title={`Вже знято ≈ ${done} дощ. (облік смуг). З карти: ${stripsOnMap} смуг (~ ${needBoards} дощ. при ${perStrip} шт./смуга). Редагуйте за фактом. Макс. за раз: ${maxStripsInput}.`}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    }
+
+                    const b = row.b
                     const ok = b.feasible !== false && (b.boardsFromOneCrossSection ?? 0) > 0
                     const rDisp = selectedLog?.radius ?? selectedTask.radiusMm
                     const done = b.qtyDone ?? 0
                     const left = bandRemainingQty(b)
                     const rowCompleteActual = left === 0
+                    const isAdHocThickness = adHocBandThicknessMmSet.has(b.thicknessMm)
+                    const stripsSecondaryOnMap =
+                      secondaryStripsOnMapByThickness.get(b.thicknessMm) ?? 0
+                    const allowManualStrips = (ok && left > 0) || isAdHocThickness
                     const perStrip = Math.max(1, boardsPerStripByThickness.get(b.thicknessMm) ?? 1)
-                    const maxStripsForLeft = left > 0 ? Math.max(1, Math.ceil(left / perStrip)) : 0
+                    const maxStripsForNorm = left > 0 && ok ? Math.max(1, Math.ceil(left / perStrip)) : 0
+                    const maxStripsInput = isAdHocThickness
+                      ? Math.max(maxStripsForNorm, stripsSecondaryOnMap, 500)
+                      : Math.max(maxStripsForNorm, 1)
                     const draftRaw = Number(bandCutDraft[b.thicknessMm])
                     const draftBoards =
                       Number.isFinite(draftRaw) && draftRaw > 0 ? Math.round(draftRaw) : 0
@@ -817,10 +990,22 @@ export function BandSawPage() {
                       draftBoards > 0 ? Math.min(left, draftBoards * perStrip) : 0
                     const previewLeft = Math.max(0, left - previewBoards)
                     const effectiveLeft = draftBoards > 0 ? previewLeft : left
+                    const inputTitle = isAdHocThickness
+                      ? `Залишилось дощок (норма): ${left}. З карти: +${stripsSecondaryOnMap} побічних смуг. 1 смуга ≈ ${perStrip} шт. Понад норму / при закритому плані — на склад. Макс. смуг: ${maxStripsInput}.`
+                      : `Залишилось дощок (норма): ${left}. 1 смуга ≈ ${perStrip} шт. по довжині; макс. смуг за раз: ${maxStripsInput}.`
                     return (
                       <tr key={b.thicknessMm} className={rowCompleteActual ? 'bandRowComplete' : undefined}>
                         <td>
                           <strong>{fmtCm(b.thicknessMm)}</strong>
+                          {isAdHocThickness ? (
+                            <span
+                              className="bandRowAdhocBadge"
+                              title="Є відповідний побічний розмір у формі бригадира"
+                            >
+                              {' '}
+                              побічний
+                            </span>
+                          ) : null}
                           {rowCompleteActual ? (
                             <span className="bandRowCompleteBadge" title="Норма зібрана">
                               {' '}
@@ -830,6 +1015,12 @@ export function BandSawPage() {
                         </td>
                         <td>
                           <strong>{b.qtyNeeded}</strong>
+                          {stripsSecondaryOnMap > 0 ? (
+                            <span className="bandStripsOnMapHint" title="Побічних смуг на карті (додатково до основного плану)">
+                              {' '}
+                              (+{stripsSecondaryOnMap} поб. смуг)
+                            </span>
+                          ) : null}
                         </td>
                         <td>
                           <strong>{done}</strong>
@@ -841,6 +1032,9 @@ export function BandSawPage() {
                               <span className="bandStatusDone">Виконано</span>
                               <span className="bandDoneForCloseHint">
                                 дошки готові — закрийте позицію на багатопилі
+                                {isAdHocThickness
+                                  ? ' Побічні смуги з колоди можна внести в «Ручне списання» і передати на склад.'
+                                  : ''}
                               </span>
                             </div>
                           ) : draftBoards > 0 && previewLeft === 0 ? (
@@ -860,12 +1054,12 @@ export function BandSawPage() {
                           )}
                         </td>
                         <td>
-                          {ok && left > 0 ? (
+                          {allowManualStrips ? (
                             <input
                               type="number"
                               min={0}
                               step={1}
-                              max={Math.max(1, maxStripsForLeft)}
+                              max={maxStripsInput}
                               className="bandCutQtyInput"
                               value={bandCutDraft[b.thicknessMm] ?? ''}
                               onChange={(e) =>
@@ -875,7 +1069,7 @@ export function BandSawPage() {
                                 }))
                               }
                               placeholder="0"
-                              title={`Залишилось дощок (норма): ${left}. 1 смуга ≈ ${perStrip} шт. по довжині; макс. смуг за раз: ${maxStripsForLeft}.`}
+                              title={inputTitle}
                             />
                           ) : (
                             '—'
@@ -904,21 +1098,26 @@ export function BandSawPage() {
                       setBandCutMsg('Оберіть завдання та колоду.')
                       return
                     }
-                    const cuts = bandSortedForLog
-                      .filter(
-                        (b) =>
-                          bandRemainingQty(b) > 0 &&
-                          b.feasible !== false &&
-                          (b.boardsFromOneCrossSection ?? 0) > 0,
-                      )
-                      .map((b) => {
-                        const raw = Number(bandCutDraft[b.thicknessMm])
-                        if (!Number.isFinite(raw) || raw <= 0) return null
+                    const cuts: { thicknessMm: number; doneQty: number }[] = []
+                    for (const urow of bandUnifiedTableRows) {
+                      if (urow.kind === 'adhoc') {
+                        const raw = Number(bandCutDraft[urow.thicknessMm])
+                        if (!Number.isFinite(raw) || raw <= 0) continue
                         const doneQty = Math.round(raw)
-                        if (doneQty <= 0) return null
-                        return { thicknessMm: b.thicknessMm, doneQty }
-                      })
-                      .filter((x): x is { thicknessMm: number; doneQty: number } => x != null)
+                        if (doneQty <= 0) continue
+                        cuts.push({ thicknessMm: urow.thicknessMm, doneQty })
+                        continue
+                      }
+                      const b = urow.b
+                      const left = bandRemainingQty(b)
+                      const rowOk = b.feasible !== false && (b.boardsFromOneCrossSection ?? 0) > 0
+                      if (!adHocBandThicknessMmSet.has(b.thicknessMm) && (!rowOk || left <= 0)) continue
+                      const raw = Number(bandCutDraft[b.thicknessMm])
+                      if (!Number.isFinite(raw) || raw <= 0) continue
+                      const doneQty = Math.round(raw)
+                      if (doneQty <= 0) continue
+                      cuts.push({ thicknessMm: b.thicknessMm, doneQty })
+                    }
                     if (cuts.length === 0) {
                       setBandCutErr(true)
                       setBandCutMsg('Додайте хоча б одну позицію з кількістю більше нуля.')
@@ -1091,6 +1290,7 @@ export function BandSawPage() {
                       ? row.y + row.thicknessMm / 2 + effectiveKerfMm / 2
                       : null
                     const kerfY = kerfCenterMm == null ? null : 120 + kerfCenterMm * scale
+                    const isSecondary = row.stripKind === 'secondary'
 
                     return (
                       <g key={`board-col-${idx}`} className="crossBoardCutGroup">
@@ -1099,11 +1299,12 @@ export function BandSawPage() {
                           y={y}
                           width={boardWSvg}
                           height={boardHSvg}
-                          className="crossBoardPiece crossBoardPiecePrimary crossBoardPiecePitago"
+                          className={`crossBoardPiece crossBoardPiecePitago ${isSecondary ? 'crossBoardPieceSecondary' : 'crossBoardPiecePrimary'}`}
                         >
                           <title>
-                            Дошка {idx + 1}: {Math.round(row.chord)} × {row.thicknessMm} мм.
-                            {' '}Основна дошка.
+                            {isSecondary
+                              ? `Побічний орієнтир ${idx + 1}: ${Math.round(row.chord)} × ${row.thicknessMm} мм. У плані стрічкової пилки без фіксованої кількості.`
+                              : `Дошка ${idx + 1}: ${Math.round(row.chord)} × ${row.thicknessMm} мм. Основна дошка.`}
                           </title>
                         </rect>
                         <line
@@ -1158,20 +1359,28 @@ export function BandSawPage() {
                     )
                   })}
                 </g>
-                {crossRows.slice(0, -1).map((row, idx) => {
-                  const next = crossRows[idx + 1]
-                  const cutYmm = row.y + row.thicknessMm / 2 + effectiveKerfMm / 2
-                  const cutYSvg = 120 + (cutYmm / selectedLog.radius) * SVG_LOG_RADIUS
-                  const heightFromBottom = Math.max(0, selectedLog.radius - cutYmm)
+                {pitagoResawCutDefs.map((def, idx) => {
+                  const cutYSvg = 120 + (def.cutYmm / selectedLog.radius) * SVG_LOG_RADIUS
+                  const heightFromBottom = pitagoCutHeightFromBottomMm(def.cutYmm, selectedLog.radius)
+                  const title =
+                    def.edge === 'top'
+                      ? `Верхній різ (над штабелем), поруч смуга ${def.thicknessMm} мм: від низу ${fmtMmOneDecimal(heightFromBottom)} мм`
+                      : def.edge === 'bottom'
+                        ? `Нижній різ (під штабелем), поруч смуга ${def.thicknessMm} мм: від низу ${fmtMmOneDecimal(heightFromBottom)} мм`
+                        : `Різ між ${def.betweenLowerMm ?? ''} мм і ${def.betweenUpperMm ?? ''} мм: від низу ${fmtMmOneDecimal(heightFromBottom)} мм`
                   return (
-                    <g key={`cut-height-${idx}`}>
-                      <line x1={-46} x2={-18} y1={cutYSvg} y2={cutYSvg} className="crossPitagoCutHeightTick" />
+                    <g key={`cut-height-${idx}-${def.edge ?? 'mid'}`}>
+                      <line
+                        x1={-46}
+                        x2={-18}
+                        y1={cutYSvg}
+                        y2={cutYSvg}
+                        className="crossPitagoCutHeightTick"
+                      />
                       <text x={-50} y={cutYSvg + 2.5} className="crossPitagoCutHeightText">
                         {fmtMmOneDecimal(heightFromBottom)}
                       </text>
-                      <title>
-                        Різ між {row.thicknessMm} мм і {next?.thicknessMm ?? ''} мм: висота від низу {fmtMmOneDecimal(heightFromBottom)} мм
-                      </title>
+                      <title>{title}</title>
                     </g>
                   )
                 })}
@@ -1183,11 +1392,6 @@ export function BandSawPage() {
             </div>
             <aside className="bandResawRuler">
               <h4 className="bandResawRulerTitle">Лінійка розпилу (торець)</h4>
-              <p className="panelHint bandResawRulerHint">
-                Шкала <strong>від низу</strong> торця: останній різ — <strong>0,0 мм</strong>, зовнішній
-                (1-й) — найбільше; показання на спад, округлення до <strong>0,1 мм</strong>. Колонка «−
-                лінійки» — на скільки зменшити від попереднього різу.
-              </p>
               <label className="bandResawRulerField">
                 Показання 1-го (зовнішнього) різу (мм)
                 <input
@@ -1197,7 +1401,7 @@ export function BandSawPage() {
                   placeholder="лише геометрія"
                   value={resawFirstCutMm}
                   onChange={(e) => setResawFirstCutMm(e.target.value)}
-                  title="Фактичне показання на зовнішньому різі, мм (0,1); решта з тим же округленням, останній ряд = 0,0"
+                  title="Фактичне показання на зовнішньому різі, мм (0,1); решта лінійно між мін. і макс. геометрією; глибокий різ без примусу 0"
                 />
               </label>
               {resawRulerSteps.length > 0 ? (
@@ -1213,9 +1417,28 @@ export function BandSawPage() {
                     </thead>
                     <tbody>
                       {resawRulerSteps.map((s) => (
-                        <tr key={s.cutIndex}>
+                        <tr key={`${s.cutIndex}-${s.edge ?? 'between'}`}>
                           <td>{s.cutIndex}</td>
-                          <td>{fmtCm(s.thicknessMm)}</td>
+                          <td>
+                            {fmtCm(s.thicknessMm)}
+                            {s.edge === 'top' ? (
+                              <span className="bandResawRulerThEdge" title="Різ над першою смугою (до кори)">
+                                {' '}
+                                верх
+                              </span>
+                            ) : s.edge === 'bottom' ? (
+                              <span className="bandResawRulerThEdge" title="Різ під останньою смугою">
+                                {' '}
+                                низ
+                              </span>
+                            ) : null}
+                            {s.stripKind === 'secondary' ? (
+                              <span className="bandResawRulerThSecondary" title="Побічна смуга з форми">
+                                {' '}
+                                поб.
+                              </span>
+                            ) : null}
+                          </td>
                           <td>{fmtMmOneDecimal(s.heightFromBottomMm)}</td>
                           <td>
                             {s.decreaseScaleByMm == null ? '—' : fmtMmOneDecimal(s.decreaseScaleByMm)}
@@ -1234,95 +1457,6 @@ export function BandSawPage() {
         )}
       </section>
 
-      {bandCalcOpen && selectedTask && selectedLog && (
-        <div
-          className="bandCalcModalBackdrop"
-          role="presentation"
-          onClick={() => setBandCalcOpen(false)}
-        >
-          <div
-            className="bandCalcModal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="bandCalcTitle"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bandCalcModalHeader">
-              <h3 id="bandCalcTitle">Розрахунок смуг і деталей</h3>
-              <button type="button" className="ghost" onClick={() => setBandCalcOpen(false)}>
-                Закрити
-              </button>
-            </div>
-            <p className="panelHint bandCalcIntro">
-              Одна <strong>фізична смуга</strong> — зріз уздовж усієї колоди заданої товщини. З неї
-              циркуляркою по довжині виходить стільки деталей, скільки в колонці «З колоди по
-              довжині» (для домінантної довжини з замовлення). На <strong>торці</strong> у схемі
-              видно, скільки <strong>дощок у одному шарі</strong> — це «з торця» для цієї товщини.
-              У полі «Смуг на зріз» підставляється{' '}
-              <strong>min(макс. смуг за нормою, дощок на торці)</strong> — щоб одним вводом
-              орієнтуватись на картку розкрою, не перевищуючи залишок.
-            </p>
-            <p className="panelHint bandCalcExample">
-              Приклад: якщо на торці <strong>4</strong> дошки в шарі, а з однієї смуги по довжині
-              виходить по <strong>4</strong> деталі, то <strong>4</strong> смуги дають до{' '}
-              <strong>4 × 4 = 16</strong> деталей (фактично не більше залишку в завданні — зайве не
-              зараховується).
-            </p>
-            <div className="bandCalcModalTableWrap">
-              <table className="bandCalcModalTable">
-                <thead>
-                  <tr>
-                    <th>Товщина</th>
-                    <th>Залишок дет.</th>
-                    <th>Дощок на торці (шар)</th>
-                    <th>Дет. з 1 смуги</th>
-                    <th>Макс. смуг</th>
-                    <th>Підставка</th>
-                    <th>≈ дет. від підставки</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bandCalcBreakdown.length === 0 ? (
-                    <tr>
-                      <td colSpan={7}>
-                        Немає рядків з залишком або оберіть колоду для коефіцієнтів.
-                      </td>
-                    </tr>
-                  ) : (
-                    bandCalcBreakdown.map((row) => (
-                      <tr key={row.thicknessMm}>
-                        <td>{fmtCm(row.thicknessMm)}</td>
-                        <td>{row.left}</td>
-                        <td>{row.faceBoards > 0 ? row.faceBoards : '—'}</td>
-                        <td>{row.per}</td>
-                        <td>{row.ok ? row.maxStrips : '—'}</td>
-                        <td>{row.ok ? row.suggested : '—'}</td>
-                        <td>{row.ok ? row.piecesIfSuggested : '—'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {bandCalcBreakdown.some((r) => r.lengthsForTh.length > 0) && (
-              <p className="panelHint bandCalcFootnote">
-                Довжини з замовлення для товщин:{' '}
-                {bandCalcBreakdown
-                  .filter((r) => r.lengthsForTh.length > 0)
-                  .map((r, idx) => (
-                    <span key={r.thicknessMm} className="bandCalcLenSpan">
-                      {idx > 0 ? '; ' : ''}
-                      <strong>{fmtCm(r.thicknessMm)}</strong>:{' '}
-                      {r.lengthsForTh.map((len) => fmtCm(len)).join(', ')}
-                    </span>
-                  ))}
-                . Кількість заготовок по кожній довжині з однієї колоди — у колонці таблиці «З колоди
-                по довжині».
-              </p>
-            )}
-          </div>
-        </div>
-      )}
     </>
   )
 }

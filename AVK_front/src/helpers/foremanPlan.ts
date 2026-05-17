@@ -1,6 +1,7 @@
 import { buildCrossSectionRows, type BandCrossFitMode } from './crossSection'
 import { computeBoardsAcrossWidth } from './circularWaste'
-import type { OrderLine } from './parseForemanOrders'
+import type { DimensionRowInput, OrderLine } from './parseForemanOrders'
+import { crossSectionMmFromDimensionRow, mergeOrderLines } from './parseForemanOrders'
 import { workpiecesAlongOneLog } from './alongLogPieces'
 
 export type BandThicknessPlan = {
@@ -192,6 +193,100 @@ export function buildForemanPlan(
   }
 
   return { band, circular, alongLog: alongLogFromOrders(orders, kerfCircularMm) }
+}
+
+function minChordAcrossBandRows(
+  radiusMm: number,
+  stripThicknessMm: number,
+  kerfBandMm: number,
+  fit: BandCrossFitMode = 'min_waste',
+): number {
+  const rows = buildCrossSectionRows(radiusMm, stripThicknessMm, kerfBandMm, fit)
+  if (!rows.length) return 0
+  return Math.min(...rows.map((r) => r.chord))
+}
+
+/**
+ * Додає в лінії замовлення для плану побічні рядки без кількості, якщо вони вміщуються після розкладу основних:
+ * спочатку «надлишкові» слоти торця, інакше — залишок ширини ряду (відходи) під ширину побічної дошки.
+ */
+export function mergeOpenSecondaryDimensionRowsIntoPlanOrders(
+  baseLines: OrderLine[],
+  dimensionRows: DimensionRowInput[] | undefined,
+  unit: 'mm' | 'cm',
+  radiusMm: number,
+  kerfBandMm: number,
+  kerfCircularMm: number,
+  bandCrossFit: BandCrossFitMode = 'min_waste',
+): OrderLine[] {
+  if (!dimensionRows?.length) return mergeOrderLines(baseLines)
+
+  const plan0 = buildForemanPlan(baseLines, radiusMm, kerfBandMm, kerfCircularMm, bandCrossFit)
+  const spareByTh = new Map<number, number>()
+  for (const b of plan0.band) {
+    spareByTh.set(Math.round(b.thicknessMm), Math.max(0, Math.round(b.overshootBoards ?? 0)))
+  }
+
+  const dominantL = Math.max(0, Math.round(plan0.alongLog.dominantLengthMm ?? 0))
+  const kc = Math.max(0, kerfCircularMm)
+  const added: OrderLine[] = []
+  const wasteRowKeysUsed = new Set<string>()
+
+  for (const r of dimensionRows) {
+    const rowKind = r.kind === 'secondary' ? 'secondary' : 'main'
+    if (rowKind !== 'secondary' || String(r.qty ?? '').trim() !== '') continue
+
+    const cs = crossSectionMmFromDimensionRow(r, unit)
+    if (!cs) continue
+
+    const rawL = Number(String(r.length ?? '').replace(',', '.'))
+    let lengthMm = 0
+    if (Number.isFinite(rawL) && String(r.length ?? '').trim() !== '') {
+      lengthMm = unit === 'cm' ? Math.round(rawL * 10) : Math.round(rawL)
+    }
+    if (lengthMm <= 0) lengthMm = dominantL
+
+    const tryPlace = (T: number, W: number): boolean => {
+      const th = Math.round(T)
+      const w = Math.round(W)
+      if (th <= 0 || w <= 0) return false
+
+      const bandT = plan0.band.find((b) => Math.round(b.thicknessMm) === th)
+      const circT = plan0.circular.find((c) => Math.round(c.thicknessMm) === th)
+      if (!bandT || bandT.feasible === false || !circT) return false
+
+      const minChord = minChordAcrossBandRows(radiusMm, th, kerfBandMm, bandCrossFit)
+      if (minChord <= 0) return false
+      if (computeBoardsAcrossWidth(minChord, w, kc).boards < 1) return false
+
+      const spare = spareByTh.get(th) ?? 0
+      if (spare >= 1) {
+        added.push({ qty: 1, aMm: th, bMm: w, lengthMm })
+        spareByTh.set(th, spare - 1)
+        return true
+      }
+
+      const B = Math.max(1, Math.round(circT.avgBoardWidthMm))
+      const rows = buildCrossSectionRows(radiusMm, th, kerfBandMm, bandCrossFit)
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]!
+        const key = `${th}|${i}`
+        if (wasteRowKeysUsed.has(key)) continue
+        const { wasteMm } = computeBoardsAcrossWidth(row.chord, B, kc)
+        if (wasteMm + 0.5 < w) continue
+        wasteRowKeysUsed.add(key)
+        added.push({ qty: 1, aMm: th, bMm: w, lengthMm })
+        return true
+      }
+
+      return false
+    }
+
+    if (tryPlace(cs.aMm, cs.bMm)) continue
+    tryPlace(cs.bMm, cs.aMm)
+  }
+
+  return mergeOrderLines([...baseLines, ...added])
 }
 
 /** Перерахунок плану стрічкової пили під фактичний радіус колоди (на екрані розпиловщика). */

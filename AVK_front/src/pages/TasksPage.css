@@ -1,7 +1,97 @@
+/* Сторінка завдань: спільна палітра та ритм */
+.taskFormPanel {
+  padding: 14px 14px 18px;
+}
+
+.taskFormPanel:has(.taskFormTabsChrome) {
+  background: linear-gradient(165deg, #fffefb 0%, #faf6ef 48%, #f3ebe0 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 12px 28px rgba(62, 41, 21, 0.09);
+}
+
+.taskFormBody {
+  background: linear-gradient(180deg, #fffdf8 0%, #fffaf3 100%);
+  border: 1px solid #b8956e;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 18px 16px 20px;
+  margin-top: -2px;
+  position: relative;
+}
+
+.taskFormTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+.taskFormTitleRow .foremanTaLabel {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.taskFormSectionTitle {
+  margin: 18px 0 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #7a5f4a;
+  line-height: 1.3;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(184, 149, 110, 0.4);
+}
+
+.taskFormSectionTitle:first-of-type {
+  margin-top: 4px;
+}
+
+.taskFormPalletRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin: 6px 0 14px;
+}
+
+.taskFormPrimaryBtn {
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(92, 61, 36, 0.22);
+  transition:
+    box-shadow 0.18s ease,
+    filter 0.18s ease,
+    transform 0.12s ease;
+}
+
+.taskFormPrimaryBtn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 14px rgba(92, 61, 36, 0.28);
+}
+
+.taskFormPrimaryBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.taskFormPrimaryBtn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.taskFormSecondaryBtn {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
 /* Вкладки як у браузері: на широкому екрані смуга + активна “з’єднана” з панеллю; на мобільному — вертикальний список. */
 .taskFormTabsChrome {
   border-bottom: 2px solid #b8956e;
-  margin: 12px 0 0;
+  margin: 4px 0 0;
   background: linear-gradient(180deg, #ebe3d8 0%, #d9cdc0 100%);
   border-radius: 10px 10px 0 0;
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.35);
@@ -74,7 +164,7 @@
   color: #1f140c;
   font-weight: 700;
   border-color: #b8956e;
-  border-bottom-color: #fffaf3;
+  border-bottom-color: #fffdf8;
   margin-bottom: -2px;
   padding-bottom: 14px;
   z-index: 1;
@@ -84,14 +174,27 @@
     0 1px 0 rgba(184, 149, 110, 0.35);
 }
 
-.taskFormBody {
-  background: #fffaf3;
-  border: 1px solid #b8956e;
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-  padding: 12px 8px 16px;
-  margin-top: -2px;
-  position: relative;
+.taskDraftBanner {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #8b6914;
+  background: linear-gradient(180deg, #fff9e6 0%, #f5ecd4 100%);
+  box-shadow: 0 4px 14px rgba(92, 61, 36, 0.08);
+}
+
+.taskDraftBannerText {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #3a2e22;
+}
+
+.taskDraftBannerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 @media (max-width: 640px) {
@@ -139,32 +242,16 @@
     margin-top: 0;
     border-top: 2px solid #b8956e;
     border-radius: 0 0 10px 10px;
-    padding: 14px 10px 16px;
+    padding: 16px 12px 18px;
   }
 }
 
-.foremanTechRow {
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 10px 0;
-}
-
-.foremanTechRow label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.88rem;
-}
-
-.foremanTechRow input {
-  width: 120px;
-}
-
 .foremanPalletPickRow {
+  display: flex;
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-end;
-  margin: 8px 0 12px;
+  margin: 0;
 }
 
 .foremanPalletPickRow label {
@@ -223,17 +310,50 @@
 }
 
 .taskList {
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 2px solid #e3d1bc;
+  margin-top: 32px;
+  padding-top: 0;
+  border-top: none;
+  position: relative;
+}
+
+.taskList::before {
+  content: '';
+  display: block;
+  height: 2px;
+  margin-bottom: 22px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(184, 149, 110, 0.55) 12%,
+    rgba(184, 149, 110, 0.55) 88%,
+    transparent
+  );
+}
+
+.taskList h2 {
+  margin: 0 0 18px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  color: #2f2115;
 }
 
 .taskCard {
   border: 1px solid #d5bea2;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  background: #fffcf7;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, #fffcf8 0%, #faf6ef 100%);
+  box-shadow: 0 4px 16px rgba(62, 41, 21, 0.07);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.taskCard:hover {
+  border-color: #c9a882;
+  box-shadow: 0 8px 24px rgba(62, 41, 21, 0.1);
 }
 
 .taskCardHead {
@@ -309,6 +429,17 @@
   overflow-x: auto;
 }
 
+.taskOpenSecondaryNote {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgb(90, 76, 58);
+  background: #f8f2ea;
+  border-radius: 8px;
+  border: 1px dashed #d4c4b0;
+}
+
 .taskAssignRow label {
   flex-direction: row;
   align-items: center;
@@ -318,26 +449,92 @@
 
 .foremanDimTableWrap {
   width: 100%;
-  overflow-x: auto;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid #e0d2c4;
+  background: #fffefb;
+  box-shadow: 0 4px 18px rgba(62, 41, 21, 0.06);
+  overflow: hidden;
 }
+
+.foremanDimTableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.foremanDimTableActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 0;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #faf6f0 0%, #f3ebe3 100%);
+  border-top: 1px solid #e8ddd2;
+}
+
+.foremanDimRowSecondary {
+  background: rgba(139, 115, 85, 0.07);
+}
+
+.foremanDimRowDuplicate {
+  background: rgba(255, 193, 7, 0.16);
+  box-shadow: inset 3px 0 0 #c9a000;
+}
+
+.foremanDimRowSecondary.foremanDimRowDuplicate {
+  background: linear-gradient(
+    90deg,
+    rgba(201, 160, 0, 0.12) 0,
+    rgba(139, 115, 85, 0.09) 8px
+  );
+}
+
+.foremanDupWarn {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #5c4a20;
+  background: linear-gradient(180deg, #fff8e8 0%, #fff3d6 100%);
+  border: 1px solid #e6c200;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(201, 160, 0, 0.12);
+}
+
+.foremanBoardPreviewDimText {
+  fill: #4a3520;
+  font-weight: 700;
+}
+
 
 .foremanDimTable {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .foremanDimTable th,
 .foremanDimTable td {
-  border: 1px solid #e3d1bc;
-  padding: 6px 8px;
+  border: 1px solid #e8ddd2;
+  padding: 8px 10px;
   text-align: left;
+  vertical-align: middle;
 }
 
 .foremanDimTable thead {
-  background: #f0e8dc;
+  background: linear-gradient(180deg, #efe6da 0%, #e5d9ca 100%);
+}
+
+.foremanDimTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4d3b2c;
+  box-shadow: 0 1px 0 #d8cbbd;
 }
 
 .foremanDimInput {
@@ -345,10 +542,17 @@
   min-width: 72px;
   max-width: 120px;
   border: 1px solid #c5a37b;
-  border-radius: 6px;
-  padding: 6px 8px;
+  border-radius: 8px;
+  padding: 8px 9px;
   font: inherit;
   background: #fffaf3;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.foremanDimInput:focus {
+  outline: none;
+  border-color: #8a613d;
+  box-shadow: 0 0 0 2px rgba(138, 97, 61, 0.2);
 }
 
 .foremanBoardPreviewCell {
@@ -421,12 +625,45 @@ button.ghost.danger {
   border-color: #d4a5a5;
 }
 
-.taskEditBanner {
-  margin-top: 12px;
-  padding: 10px 12px;
-  background: #fff8e6;
-  border-radius: 8px;
-  border: 1px solid #e3d1bc;
+.taskFormActions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 4px;
+  margin-bottom: 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(184, 149, 110, 0.35);
+}
+
+.taskFormActions > button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 46px;
+  max-width: min(100%, 288px);
+  padding: 10px 14px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.taskFormActions > button:only-child {
+  flex: 0 1 auto;
+  min-width: min(100%, 200px);
+  max-width: min(100%, 320px);
+}
+
+.taskFormPanel .panelHint {
+  margin-top: 8px;
+  padding: 10px 13px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(184, 149, 110, 0.28);
+  border-radius: 10px;
 }
 
 @media (max-width: 768px) {
@@ -440,8 +677,7 @@ button.ghost.danger {
 
   .taskMeta,
   .taskAssign,
-  .taskOrderPreview,
-  .taskOrderFmtHint {
+  .taskOrderPreview {
     font-size: 0.82rem;
   }
 
@@ -451,6 +687,19 @@ button.ghost.danger {
 
   .taskCardActions {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .taskFormActions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .taskFormActions > button {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: min(100%, 288px);
   }
 }
 
@@ -482,5 +731,116 @@ button.ghost.danger {
     flex: 1 1 calc(50% - 3px);
     min-width: 120px;
     min-height: 40px;
+  }
+}
+
+/* Підтвердження видалення завдання */
+.taskDeleteModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(45, 32, 22, 0.48);
+  backdrop-filter: blur(3px);
+}
+
+.taskDeleteModal {
+  width: min(440px, 100%);
+  border-radius: 14px;
+  border: 1px solid #b8956e;
+  background: linear-gradient(180deg, #fffefb 0%, #fffaf3 100%);
+  padding: 22px 24px 20px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 22px 55px rgba(62, 41, 21, 0.28);
+}
+
+.taskDeleteModalTitle {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3d2a1c;
+  letter-spacing: -0.02em;
+}
+
+.taskDeleteModalLead {
+  margin: 0 0 14px;
+  color: #5c483a;
+  line-height: 1.55;
+  font-size: 0.94rem;
+}
+
+.taskDeleteModalTaskName {
+  margin: 0 0 20px;
+  padding: 11px 14px;
+  background: #f5efe6;
+  border-radius: 10px;
+  border: 1px solid #e3d1bc;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #3d2a1c;
+}
+
+.taskDeleteModalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.taskDeleteModalBtnCancel {
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 108px;
+}
+
+.taskDeleteModalBtnDanger {
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 1px solid #a63a3a;
+  background: linear-gradient(180deg, #c74a4a 0%, #b33333 100%);
+  color: #fffaf8;
+  box-shadow: 0 2px 10px rgba(140, 35, 35, 0.35);
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.15s ease;
+}
+
+.taskDeleteModalBtnDanger:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: 0 4px 14px rgba(140, 35, 35, 0.42);
+}
+
+.taskDeleteModalBtnDanger:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.taskDeleteModalBtnDanger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .taskDeleteModal {
+    padding: 18px 18px 16px;
+  }
+
+  .taskDeleteModalActions {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+  .taskDeleteModalBtnCancel,
+  .taskDeleteModalBtnDanger {
+    width: min(100%, 280px);
+    min-width: 0;
   }
 }

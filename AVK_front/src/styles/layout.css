@@ -183,6 +183,15 @@
   background: #3e2915;
 }
 
+.appHeaderBackBtn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+
 .appHeaderMain {
   display: flex;
   align-items: center;
@@ -552,6 +561,14 @@ td {
   stroke-dasharray: 2 1.4;
 }
 
+/* Побічні розміри без фіксованої кількості — на карті стрічкової пилки (орієнтир) */
+.crossBoardPieceSecondary {
+  fill: rgba(139, 115, 85, 0.22);
+  stroke: #5c483a;
+  stroke-width: 0.8;
+  stroke-dasharray: 3.5 2;
+}
+
 .crossSvgSurplusHint {
   margin-bottom: 6px;
   max-width: 640px;
@@ -816,6 +833,44 @@ td {
   color: #2e7d32;
   font-weight: 800;
   font-size: 0.95em;
+}
+
+.bandAllThTable tbody tr.bandRowAdhoc {
+  background: #faf6f3;
+}
+
+.bandAllThTable tbody tr.bandRowAdhoc td {
+  border-color: #e0d2c8;
+}
+
+.bandRowAdhocBadge {
+  color: #6d4c41;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.bandStripsOnMapHint {
+  display: inline;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6d4c41;
+  white-space: nowrap;
+}
+
+.bandStatusSecondarySub {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #795548;
+  margin-top: 2px;
+}
+
+@media (min-width: 720px) {
+  .bandStatusSecondarySub {
+    display: inline;
+    margin-top: 0;
+    margin-left: 4px;
+  }
 }
 
 .bandDoneStatus {
@@ -1095,6 +1150,12 @@ td {
   font-weight: 700;
 }
 
+.bandStatusSecondary {
+  color: #5d4037;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .bandStatusDone {
   color: #33691e;
   font-weight: 700;
@@ -1183,6 +1244,18 @@ td {
   padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid #c9b8a4;
+}
+
+.bandResawRulerThSecondary {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #5d4037;
+}
+
+.bandResawRulerThEdge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4a3728;
 }
 
 .bandResawRulerTableWrap {
@@ -1635,6 +1708,7 @@ button.btnDanger:disabled {
   }
 
   .bandStatusPrimary,
+  .bandStatusSecondary,
   .bandStatusDone,
   .bandStatusBad {
     display: inline-block;

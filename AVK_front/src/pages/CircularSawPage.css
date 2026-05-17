@@ -89,23 +89,63 @@
   color: #7a6a55;
 }
 
-.circularOkMsg,
 .circularDoneMsg {
   margin: 12px 0;
   padding: 10px 12px;
   border-radius: 8px;
+  border: 1px solid #d4c4b0;
+  background: #fffdf9;
 }
 
-.circularOkMsg {
+/* Успіх порізки + кнопка «Скасувати останній запис» в одному блоці */
+.circularOkBlock {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
   border: 1px solid #7cb87c;
   background: #e8f5e9;
   color: #1b3d1f;
-  font-weight: 700;
 }
 
-.circularDoneMsg {
-  border: 1px solid #d4c4b0;
-  background: #fffdf9;
+.circularOkBlock .circularOkMsg {
+  margin: 0 0 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: inherit;
+  line-height: 1.45;
+}
+
+.circularOkBlock .circularOkMsg:last-child {
+  margin-bottom: 0;
+}
+
+.circularOkBlock .circularUndoRow {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(91, 142, 95, 0.4);
+}
+
+.circularOkBlock .circularUndoHint {
+  color: #355738;
+}
+
+.circularUndoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 10px;
+}
+
+.circularUndoLastBtn {
+  font-weight: 600;
+}
+
+.circularUndoHint {
+  margin: 0;
+  font-size: 0.88rem;
 }
 
 .circularModalBackdrop {
@@ -158,10 +198,6 @@
     font-size: 1.25rem;
   }
 
-  .circularHeroLead {
-    font-size: 0.92rem;
-  }
-
   .circularCard {
     padding: 12px;
   }
@@ -182,7 +218,6 @@
   .circularSimpleTable,
   .circularSimpleTable thead,
   .circularSimpleTable tbody,
-  .circularSimpleTable tr,
   .circularSimpleTable th,
   .circularSimpleTable td {
     display: block;
@@ -193,12 +228,59 @@
   }
 
   .circularSimpleTable tr {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px 6px;
     margin-bottom: 12px;
     padding: 10px 12px;
     border: 1px solid #d8c3aa;
     border-radius: 10px;
     background: #fffdf9;
     box-shadow: 0 4px 12px rgba(83, 57, 34, 0.07);
+  }
+
+  .circularSimpleTdDetail {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .circularSimpleTdVisual {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .circularSimpleTdStat {
+    grid-row: 3;
+    min-width: 0;
+  }
+
+  .circularSimpleTable tr > td:nth-child(3) {
+    grid-column: 1;
+  }
+
+  .circularSimpleTable tr > td:nth-child(4) {
+    grid-column: 2;
+  }
+
+  .circularSimpleTable tr > td:nth-child(5) {
+    grid-column: 3;
+  }
+
+  .circularSimpleTable tr > td:nth-child(6) {
+    grid-column: 4;
+  }
+
+  .circularSimpleTdQtyInput {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+    min-width: 0;
+  }
+
+  .circularSimpleTdApply {
+    grid-column: 3 / span 2;
+    grid-row: 4;
+    min-width: 0;
+    align-self: end;
   }
 
   .circularSimpleTable td {
@@ -211,6 +293,50 @@
     padding: 8px 0;
   }
 
+  .circularSimpleTdStat {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 8px 4px;
+    border-bottom: none;
+    border: 1px solid #e8ddd2;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  .circularSimpleTdStat::before {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #6f5338;
+    text-transform: none;
+  }
+
+  .circularSimpleTdDetail,
+  .circularSimpleTdVisual {
+    border-bottom: 1px solid #eee2d4;
+    padding-bottom: 10px;
+    margin-bottom: 2px;
+  }
+
+  .circularSimpleTdApply {
+    border-bottom: none;
+    padding-bottom: 0;
+    justify-content: center;
+  }
+
+  .circularSimpleTdQtyInput {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
   .circularSimpleTable td:last-child {
     border-bottom: none;
   }
@@ -221,6 +347,10 @@
     font-size: 0.82rem;
     font-weight: 800;
     color: #6f5338;
+  }
+
+  .circularSimpleTdStat::before {
+    flex: none;
   }
 
   .circularSimpleTable td[data-label='']::before {
@@ -262,14 +392,24 @@
 }
 
 @media (max-width: 420px) {
-  .circularSimpleTable td {
+  .circularSimpleTable td:not(.circularSimpleTdStat) {
     align-items: stretch;
     flex-direction: column;
     gap: 6px;
   }
 
-  .circularSimpleTable td::before {
+  .circularSimpleTable td:not(.circularSimpleTdStat)::before {
     flex-basis: auto;
+  }
+
+  .circularSimpleTdQtyInput {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  .circularSimpleTdApply {
+    grid-column: 1 / -1;
+    grid-row: 5;
   }
 }
 
@@ -279,13 +419,6 @@
 
 .circularHero h2 {
   margin: 0 0 10px;
-}
-
-.circularHeroLead {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #3a3228;
 }
 
 .circularCard {
@@ -463,26 +596,12 @@
   margin-top: 0;
 }
 
-.circularManualRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  align-items: flex-end;
-}
-
 .circularFieldCompact {
   margin-bottom: 0;
 }
 
 .circularFieldCompact input {
   max-width: 140px;
-}
-
-.circularManualActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
 }
 
 .circularBtnPrimary {

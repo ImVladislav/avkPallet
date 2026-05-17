@@ -6,6 +6,7 @@ import {
   type ManagedUser,
 } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { useAppDialog } from '../context/AppDialogContext'
 import { TAB_LABELS, type TabId } from '../routes/paths'
 import './LogsPage.css'
 import type { UserAccessTab } from '../api'
@@ -31,6 +32,7 @@ function sortedTabs(tabs: string[]): UserAccessTab[] {
 export function UsersPage() {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
+  const { confirm } = useAppDialog()
   const [users, setUsers] = useState<ManagedUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,14 +56,18 @@ export function UsersPage() {
     void reload()
   }, [])
 
-  const onDelete = (target: ManagedUser) => {
+  const onDelete = async (target: ManagedUser) => {
     if (currentUser?.id === target.id) {
       setError('Не можна видалити власний обліковий запис.')
       return
     }
-    const ok = window.confirm(
-      `Видалити працівника «${target.displayName}» (${target.username})? Цю дію не можна скасувати.`,
-    )
+    const ok = await confirm({
+      title: 'Видалити працівника?',
+      message: `«${target.displayName}» (${target.username}). Цю дію не можна скасувати.`,
+      confirmLabel: 'Видалити',
+      cancelLabel: 'Скасувати',
+      danger: true,
+    })
     if (!ok) return
     setDeletingId(target.id)
     setError(null)
@@ -139,7 +145,7 @@ export function UsersPage() {
                       <button
                         type="button"
                         className="btnDanger"
-                        onClick={() => onDelete(user)}
+                        onClick={() => void onDelete(user)}
                         disabled={
                           deletingId !== null ||
                           currentUser?.id === user.id

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { clearRoundwoodStock, fetchRoundwoodState, fetchTasks } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { useAppDialog } from '../context/AppDialogContext'
 import { useRoundwoodReload } from '../hooks/useRoundwoodReload'
 import { useWorkTasksReload } from '../hooks/useWorkTasksReload'
 import { stripStockRowsForTask } from '../helpers/stripStockRows'
@@ -14,6 +15,7 @@ function fmtMm(mm: number): string {
 
 export function WarehousePage() {
   const { user } = useAuth()
+  const { confirm } = useAppDialog()
   const [tasks, setTasks] = useState<WorkTask[]>([])
   const [err, setErr] = useState<string | null>(null)
   const [roundwoodCount, setRoundwoodCount] = useState<number | null>(null)
@@ -69,17 +71,18 @@ export function WarehousePage() {
   useRoundwoodReload(reloadRoundwood)
 
   const clearRoundwoodRemainder = () => {
-    if (!canClearRoundwood) return
-    if (
-      !window.confirm(
-        'Очистити весь залишок кругляка на сервері? Журнал збережеться.',
-      )
-    ) {
-      return
-    }
-    setRoundwoodBusy(true)
-    setRoundwoodErr(null)
     void (async () => {
+      if (!canClearRoundwood) return
+      const ok = await confirm({
+        title: 'Очистити залишок кругляка?',
+        message: 'Очистити весь залишок кругляка на сервері? Журнал збережеться.',
+        confirmLabel: 'Очистити',
+        cancelLabel: 'Скасувати',
+        danger: true,
+      })
+      if (!ok) return
+      setRoundwoodBusy(true)
+      setRoundwoodErr(null)
       try {
         await clearRoundwoodStock()
         await reloadRoundwood()

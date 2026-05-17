@@ -1,8 +1,12 @@
 import { readJson, writeJson } from '../helpers/jsonStore.js'
 import { TASKS_FILE } from '../helpers/paths.js'
 import { boardsPerPhysicalStrip } from '../helpers/alongLogPlan.js'
-import { parseForemanOrderText } from '../helpers/parseForemanOrders.js'
-import { buildForemanPlan } from '../helpers/foremanPlan.js'
+import {
+  parseForemanOrderText,
+  parseForemanOrderTextOrEmpty,
+  adHocBandThicknessesFromDimensionRows,
+} from '../helpers/parseForemanOrders.js'
+import { buildForemanPlan, mergeOpenSecondaryDimensionRowsIntoPlanOrders } from '../helpers/foremanPlan.js'
 
 const CAN_CREATE = ['foreman', 'admin', 'super_admin']
 
@@ -87,7 +91,11 @@ function sanitizeDimensionRows(raw) {
         length: String(source.length ?? '').trim(),
       }
     })
-    .filter((row) => row.qty && row.height && row.width && row.length)
+    .filter((row) => {
+      if (!row.height || !row.width) return false
+      if (row.kind === 'secondary' && !row.qty) return true
+      return !!row.qty
+    })
   return rows.length > 0 ? rows : undefined
 }
 
@@ -117,12 +125,15 @@ function sanitizePalletTarget(raw) {
   return { palletTypeId: id, palletTypeName: recipe.name, qty }
 }
 
-function buildPlanFromParsedLines(lines, R, kb, kc) {
-  const planRaw = buildForemanPlan(lines, R, kb, kc)
+function buildPlanFromParsedLines(lines, R, kb, kc, dimensionRows, unit) {
+  const dim = Array.isArray(dimensionRows) ? dimensionRows : []
+  const merged = mergeOpenSecondaryDimensionRowsIntoPlanOrders(lines, dim, unit, R, kb, kc)
+  const planRaw = buildForemanPlan(merged, R, kb, kc)
   return {
     ...planRaw,
     band: planRaw.band.map((b) => ({ ...b, qtyDone: b.qtyDone ?? 0 })),
     circular: planRaw.circular.map((c) => ({ ...c, qtyDone: c.qtyDone ?? 0 })),
+    dimensionRows: dim,
   }
 }
 
@@ -206,6 +217,7 @@ export async function createTask(req, res) {
 
   let order = String(orderText ?? '').trim()
   const u = unit === 'cm' ? 'cm' : 'mm'
+  const dimClean = sanitizeDimensionRows(dimensionRows)
 
   /** @type {{ ok: true, lines: { qty: number, aMm: number, bMm: number, lengthMm: number }[] }} */
   let parsed
@@ -214,11 +226,23 @@ export async function createTask(req, res) {
     if (!order) order = `${palletTargetClean.qty} шт × ${palletTargetClean.palletTypeName}`
   } else {
     if (!order) {
-      return res.status(400).json({ error: 'Додайте рядки розмірів або замовлення' })
+      if (!dimClean || dimClean.length === 0) {
+        return res.status(400).json({ error: 'Додайте рядки розмірів або замовлення' })
+      }
+      parsed = { ok: true, lines: [] }
+    } else {
+      parsed = parseForemanOrderText(order, u)
+      if (!parsed.ok) {
+        return res.status(400).json({ error: parsed.error })
+      }
     }
-    parsed = parseForemanOrderText(order, u)
-    if (!parsed.ok) {
-      return res.status(400).json({ error: parsed.error })
+    if (taskKind === 'circular') {
+      const bad = parsed.lines.some((l) => !(Number(l.lengthMm) > 0))
+      if (bad) {
+        return res.status(400).json({
+          error: 'Для циркулярки кожен рядок має містити довжину (четверте число)',
+        })
+      }
     }
   }
 
@@ -232,7 +256,7 @@ export async function createTask(req, res) {
     return res.status(400).json({ error: 'Некоректні пропили' })
   }
 
-  const plan = buildPlanFromParsedLines(parsed.lines, R, kb, kc)
+  const plan = buildPlanFromParsedLines(parsed.lines, R, kb, kc, dimClean, u)
   const assign = assignDefaultForTaskKind(taskKind)
 
   const tasks = await readJson(TASKS_FILE, [])
@@ -244,7 +268,7 @@ export async function createTask(req, res) {
     title: t,
     taskKind,
     orderText: order,
-    ...(sanitizeDimensionRows(dimensionRows) ? { dimensionRows: sanitizeDimensionRows(dimensionRows) } : {}),
+    ...(dimClean && dimClean.length > 0 ? { dimensionRows: dimClean } : {}),
     ...(palletTargetClean && taskKind === 'pallets' ? { palletTarget: palletTargetClean } : {}),
     unit: u,
     radiusMm: R,
@@ -311,6 +335,7 @@ export async function updateTask(req, res) {
 
   let order = String(orderText ?? '').trim()
   const u = unit === 'cm' ? 'cm' : 'mm'
+  const dimClean = sanitizeDimensionRows(dimensionRows)
 
   /** @type {{ ok: true, lines: { qty: number, aMm: number, bMm: number, lengthMm: number }[] }} */
   let parsed
@@ -319,11 +344,23 @@ export async function updateTask(req, res) {
     if (!order) order = `${palletTargetClean.qty} шт × ${palletTargetClean.palletTypeName}`
   } else {
     if (!order) {
-      return res.status(400).json({ error: 'Додайте рядки розмірів або замовлення' })
+      if (!dimClean || dimClean.length === 0) {
+        return res.status(400).json({ error: 'Додайте рядки розмірів або замовлення' })
+      }
+      parsed = { ok: true, lines: [] }
+    } else {
+      parsed = parseForemanOrderText(order, u)
+      if (!parsed.ok) {
+        return res.status(400).json({ error: parsed.error })
+      }
     }
-    parsed = parseForemanOrderText(order, u)
-    if (!parsed.ok) {
-      return res.status(400).json({ error: parsed.error })
+    if (taskKindResolved === 'circular') {
+      const bad = parsed.lines.some((l) => !(Number(l.lengthMm) > 0))
+      if (bad) {
+        return res.status(400).json({
+          error: 'Для циркулярки кожен рядок має містити довжину (четверте число)',
+        })
+      }
     }
   }
 
@@ -341,7 +378,7 @@ export async function updateTask(req, res) {
   const prevCircByTh = new Map(
     (prev.plan?.circular ?? []).map((c) => [c.thicknessMm, c.qtyDone ?? 0]),
   )
-  const planRaw = buildPlanFromParsedLines(parsed.lines, R, kb, kc)
+  const planRaw = buildPlanFromParsedLines(parsed.lines, R, kb, kc, dimClean, u)
   const plan = {
     ...planRaw,
     band: planRaw.band.map((b) => ({
@@ -362,7 +399,6 @@ export async function updateTask(req, res) {
     title: t,
     taskKind: taskKindResolved,
     orderText: order,
-    ...(sanitizeDimensionRows(dimensionRows) ? { dimensionRows: sanitizeDimensionRows(dimensionRows) } : {}),
     unit: u,
     radiusMm: R,
     kerfBandMm: kb,
@@ -371,6 +407,11 @@ export async function updateTask(req, res) {
     plan,
     stripInventory: prev.stripInventory ?? [],
     updatedAt: now,
+  }
+  if (dimClean && dimClean.length > 0) {
+    task.dimensionRows = dimClean
+  } else {
+    delete task.dimensionRows
   }
   if (taskKindResolved === 'resaw' || taskKindResolved === 'circular') {
     delete task.palletTarget
@@ -451,9 +492,23 @@ export async function recordBandCut(req, res) {
     addByTh.set(th, (addByTh.get(th) ?? 0) + q)
   }
 
+  const dimensionRows =
+    Array.isArray(task.dimensionRows) && task.dimensionRows.length > 0
+      ? task.dimensionRows
+      : Array.isArray(task.plan?.dimensionRows) && task.plan.dimensionRows.length > 0
+        ? task.plan.dimensionRows
+        : []
+  const allowedAdHocTh = adHocBandThicknessesFromDimensionRows(
+    dimensionRows,
+    task.unit === 'cm' ? 'cm' : 'mm',
+  )
+
   for (const th of addByTh.keys()) {
-    if (!task.plan.band.some((b) => b.thicknessMm === th)) {
-      return res.status(400).json({ error: `Немає позиції ${th} мм у завданні` })
+    const inPlan = task.plan.band.some((b) => b.thicknessMm === th)
+    if (!inPlan && !allowedAdHocTh.has(th)) {
+      return res
+        .status(400)
+        .json({ error: `Немає позиції ${th} мм у завданні або серед побічних розмірів` })
     }
   }
 
@@ -462,31 +517,55 @@ export async function recordBandCut(req, res) {
       ? stripWidthsByThicknessMm
       : {}
 
-  const orderParsed = parseForemanOrderText(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
+  const orderParsed = parseForemanOrderTextOrEmpty(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
   if (!orderParsed.ok) {
     return res.status(400).json({ error: `Замовлення в завданні: ${orderParsed.error}` })
   }
   const orderLines = orderParsed.lines
   const kerfCirc = Number(task.kerfCircMm) || 0
 
-  /** physical strips per thickness; boards credited toward qtyDone */
-  const stripsAppliedByTh = new Map()
+  /** physical strips per thickness; boards credited toward qtyDone; зайве за норму — на склад для побічних товщин */
+  const stripsToInventory = new Map()
   const boardsAppliedByTh = new Map()
+
   for (const th of addByTh.keys()) {
+    const wantStripsTotal = addByTh.get(th) ?? 0
     const row = task.plan.band.find((b) => b.thicknessMm === th)
     const prev = row?.qtyDone ?? 0
     const need = row?.qtyNeeded ?? 0
     const rem = Math.max(0, need - prev)
-    const wantStrips = addByTh.get(th) ?? 0
     const per = boardsPerPhysicalStrip(orderLines, th, logLen, kerfCirc)
-    const maxStripsForRemainder = per > 0 ? Math.ceil(rem / per) : rem
-    const physicalStrips = Math.min(Math.max(0, wantStrips), maxStripsForRemainder)
-    const appliedBoards = Math.min(physicalStrips * per, rem)
-    stripsAppliedByTh.set(th, physicalStrips)
-    boardsAppliedByTh.set(th, appliedBoards)
+
+    let planStrips = 0
+    let boardsFromStrips = 0
+    if (rem > 0) {
+      const maxStripsForRemainder = per > 0 ? Math.ceil(rem / per) : rem
+      planStrips = Math.min(Math.max(0, wantStripsTotal), maxStripsForRemainder)
+      boardsFromStrips = Math.min(planStrips * per, rem)
+    }
+
+    const leftoverStrips = wantStripsTotal - planStrips
+    let extraStrips = 0
+    if (leftoverStrips > 0) {
+      if (allowedAdHocTh.has(th)) {
+        extraStrips = leftoverStrips
+      } else if (!row) {
+        return res.status(400).json({ error: `Товщина ${th} мм не входить у план смуг завдання` })
+      } else if (rem <= 0) {
+        return res.status(400).json({
+          error: `Для ${th} мм план уже закритий; додаткові смуги дозволені лише для побічних розмірів з замовлення`,
+        })
+      } else {
+        return res.status(400).json({ error: `Занадто багато смуг для ${th} мм відносно залишку плану` })
+      }
+    }
+
+    const totalToInventory = planStrips + extraStrips
+    if (totalToInventory > 0) stripsToInventory.set(th, totalToInventory)
+    if (boardsFromStrips > 0) boardsAppliedByTh.set(th, boardsFromStrips)
   }
 
-  const physicalTotal = [...stripsAppliedByTh.values()].reduce((sum, qty) => sum + qty, 0)
+  const physicalTotal = [...stripsToInventory.values()].reduce((sum, qty) => sum + qty, 0)
   if (physicalTotal <= 0) {
     return res.status(400).json({
       error: 'Додайте хоча б одну фактично зняту смугу.',
@@ -495,7 +574,7 @@ export async function recordBandCut(req, res) {
 
   const recordedAt = new Date().toISOString()
   const newInv = [...(task.stripInventory ?? [])]
-  for (const [th, stripQty] of stripsAppliedByTh) {
+  for (const [th, stripQty] of stripsToInventory) {
     if (stripQty <= 0) continue
     const widthsRaw = Array.isArray(widthMap[String(th)]) ? widthMap[String(th)] : []
     const widths = widthsRaw
@@ -584,11 +663,24 @@ function stripSawEffectiveRemainder(task, th) {
   return Math.max(0, incoming - cut)
 }
 
-/**
- * Станок 2: зареєструвати розпил (списати смуги з залишку після ленточної).
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
+/** Сума вже зарахованих дощок по цій товщині з попередніх записів strip-saw (для відновлення plan.circular). */
+function stripSawBoardsCreditedSumForThickness(task, th) {
+  const thr = Math.round(Number(th))
+  const cuts = task.stripSaw?.cuts ?? []
+  let s = 0
+  for (const c of cuts) {
+    if (Math.round(Number(c.thicknessMm)) !== thr) continue
+    const bc = Number(c.boardsCredited)
+    if (Number.isFinite(bc) && bc > 0) {
+      s += Math.round(bc)
+      continue
+    }
+    const bt = Number(c.boardsTotal)
+    if (Number.isFinite(bt) && bt > 0) s += Math.round(bt)
+  }
+  return s
+}
+
 function normalizeBoardsByWidth(obj) {
   if (obj == null || typeof obj !== 'object' || Array.isArray(obj)) return undefined
   const out = {}
@@ -602,6 +694,11 @@ function normalizeBoardsByWidth(obj) {
   return Object.keys(out).length > 0 ? out : undefined
 }
 
+/**
+ * Станок 2: зареєструвати розпил (списати смуги з залишку після ленточної).
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
 export async function recordStripSawCut(req, res) {
   const role = req.user.role
   if (!userCanStation(req.user, 'strip_saw')) {
@@ -646,15 +743,41 @@ export async function recordStripSawCut(req, res) {
     return res.status(400).json({ error: `Залишок ${rem} смуг, не можна списати ${qty}` })
   }
 
-  const circRows = task.plan?.circular ?? []
-  const circIdx = circRows.findIndex((c) => Math.round(Number(c.thicknessMm)) === th)
+  let circRows = Array.isArray(task.plan?.circular) ? [...task.plan.circular] : []
+  let circIdx = circRows.findIndex((c) => Math.round(Number(c.thicknessMm)) === th)
   if (circIdx < 0) {
-    return res.status(400).json({ error: 'Немає позиції цієї висоти в плані циркулярки' })
+    const bandRow = (task.plan?.band ?? []).find((b) => Math.round(Number(b.thicknessMm)) === th)
+    const baseNeed = bandRow ? Math.max(0, Math.round(Number(bandRow.qtyNeeded) || 0)) : 0
+    const priorBoards = stripSawBoardsCreditedSumForThickness(task, th)
+    const qtyNeededNew = Math.max(baseNeed, boardsTotalIn, priorBoards + boardsTotalIn)
+    if (!Number.isFinite(qtyNeededNew) || qtyNeededNew <= 0) {
+      return res.status(400).json({ error: 'Немає позиції цієї висоти в плані циркулярки' })
+    }
+    circRows.push({
+      thicknessMm: th,
+      qtyNeeded: qtyNeededNew,
+      avgChordMm: 0,
+      avgBoardWidthMm: 0,
+      circularCutsPerCrossSection: 0,
+      circularCutsTotalEstimate: 0,
+      qtyDone: 0,
+    })
+    circIdx = circRows.length - 1
   }
-  const circRow = circRows[circIdx]
-  const circPrev = circRow.qtyDone ?? 0
-  const circRem = Math.max(0, (circRow.qtyNeeded ?? 0) - circPrev)
-  const boardsCredited = Math.min(boardsTotalIn, circRem)
+  let circRow = circRows[circIdx]
+  let circPrev = Math.max(0, Math.round(Number(circRow.qtyDone) || 0))
+  let qtyNeeded = Math.max(0, Math.round(Number(circRow.qtyNeeded) || 0))
+  let circRem = Math.max(0, qtyNeeded - circPrev)
+  let boardsCredited = Math.min(boardsTotalIn, circRem)
+
+  if (boardsCredited < boardsTotalIn) {
+    const expandedNeed = circPrev + boardsTotalIn
+    qtyNeeded = Math.max(qtyNeeded, expandedNeed)
+    circRow = { ...circRow, qtyNeeded }
+    circRows[circIdx] = circRow
+    circRem = Math.max(0, qtyNeeded - circPrev)
+    boardsCredited = Math.min(boardsTotalIn, circRem)
+  }
 
   const byWidthNorm = normalizeBoardsByWidth(byWBody)
   const nextCircular = circRows.map((c, i) =>
@@ -833,6 +956,61 @@ export async function recordCircularSawCut(req, res) {
     status: task.status === 'pending' ? 'in_progress' : task.status,
     updatedAt: recordedAt,
   }
+  await writeJson(TASKS_FILE, tasks)
+  return res.json({ task: tasks[idx] })
+}
+
+/**
+ * Циркулярка: скасувати останній запис розкрою (помилка оператора).
+ * Оператор — лише свій запис; бригадир / адмін — будь-який останній.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+export async function undoLastCircularSawCut(req, res) {
+  const role = req.user.role
+  if (!userCanStation(req.user, 'circular_saw')) {
+    return res.status(403).json({ error: 'Немає доступу' })
+  }
+
+  const { id } = req.params
+  const tasks = await readJson(TASKS_FILE, [])
+  const idx = tasks.findIndex((t) => t.id === id)
+  if (idx < 0) return res.status(404).json({ error: 'Завдання не знайдено' })
+
+  const task = tasks[idx]
+  if (role === 'circular_operator' && !task.assignTo.includes('circular_operator')) {
+    return res.status(403).json({ error: 'Завдання не призначене на циркулярку' })
+  }
+
+  const cuts = task.circularSaw?.cuts ?? []
+  if (cuts.length === 0) {
+    return res.status(400).json({ error: 'Немає записів розкрою для скасування' })
+  }
+
+  const last = cuts[cuts.length - 1]
+  const privileged = ['foreman', 'admin', 'super_admin'].includes(role)
+  const lastAuthor = last?.recordedBy?.id != null ? String(last.recordedBy.id) : ''
+  if (!privileged) {
+    if (!lastAuthor || lastAuthor !== String(req.user.sub)) {
+      return res.status(403).json({
+        error: 'Можна скасувати лише власний останній запис. Зверніться до бригадира.',
+      })
+    }
+  }
+
+  const nextCuts = cuts.slice(0, -1)
+  const recordedAt = new Date().toISOString()
+  const updated = {
+    ...task,
+    updatedAt: recordedAt,
+  }
+  if (nextCuts.length > 0) {
+    updated.circularSaw = { cuts: nextCuts }
+  } else {
+    delete updated.circularSaw
+  }
+
+  tasks[idx] = updated
   await writeJson(TASKS_FILE, tasks)
   return res.json({ task: tasks[idx] })
 }

@@ -195,9 +195,6 @@ export function UserEditorPage() {
             <button type="button" onClick={onSubmit} disabled={busy || !canSubmit}>
               {busy ? 'Збереження…' : submitTitle}
             </button>
-            <button type="button" className="btnSecondary" onClick={() => navigate('/users')} disabled={busy}>
-              Назад до списку
-            </button>
           </div>
         </div>
       )}

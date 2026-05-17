@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchTasks, recordStripSawCut } from '../api'
 import { useAuth } from '../context/AuthContext'
+import type { OrderLine } from '../helpers/parseForemanOrders'
 import {
+  boardCrossAndLengthFromDimensionRow,
   boardWidthAcrossStripForThickness,
-  parseForemanOrderText,
+  crossSectionMmFromDimensionRow,
+  parseForemanOrderTextOrEmpty,
 } from '../helpers/parseForemanOrders'
 import { stripStockRowsForTask } from '../helpers/stripStockRows'
 import { useWorkTasksReload } from '../hooks/useWorkTasksReload'
@@ -19,6 +22,7 @@ type BrusRow = {
   left: number
   stripRemainder: number
   boardsPerStrip: number
+  isSecondary?: boolean
 }
 
 type ShortageConfirm = {
@@ -42,18 +46,150 @@ function boardsPerStrip(stripWidthMm: number | null, boardWidthMm: number, kerfM
   return Math.max(1, Math.floor((stripWidthMm + Math.max(0, kerfMm)) / (boardWidthMm + Math.max(0, kerfMm))))
 }
 
+function dimensionRowsForTask(task: WorkTask): WorkTask['dimensionRows'] {
+  if (Array.isArray(task.dimensionRows) && task.dimensionRows.length > 0) return task.dimensionRows
+  if (Array.isArray(task.plan?.dimensionRows) && task.plan.dimensionRows.length > 0) {
+    return task.plan.dimensionRows
+  }
+  return undefined
+}
+
+function distributeSinkAcrossOpenSecondaries(sink: number, n: number): number[] {
+  if (n <= 0) return []
+  const s = Math.max(0, Math.round(sink))
+  if (s <= 0) return Array.from({ length: n }, () => 0)
+  const base = Math.floor(s / n)
+  const rem = s % n
+  return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0))
+}
+
 function buildBrusRows(task: WorkTask): BrusRow[] {
-  const parsed = parseForemanOrderText(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
+  const parsed = parseForemanOrderTextOrEmpty(task.orderText, task.unit === 'cm' ? 'cm' : 'mm')
   if (!parsed.ok) return []
 
+  const unit = task.unit === 'cm' ? 'cm' : 'mm'
   const demand = new Map<string, { thicknessMm: number; widthMm: number; qtyNeeded: number }>()
+  const secondaryKeys = new Set<string>()
+
+  const keysFromOrderText = new Set<string>()
   for (const line of parsed.lines) {
     const thicknessMm = Math.round(line.aMm)
     const widthMm = Math.round(boardWidthAcrossStripForThickness(line, thicknessMm) ?? line.bMm)
     const key = rowKey(thicknessMm, widthMm)
+    keysFromOrderText.add(key)
     const prev = demand.get(key)
     if (prev) prev.qtyNeeded += line.qty
     else demand.set(key, { thicknessMm, widthMm, qtyNeeded: line.qty })
+  }
+
+  const sumMainQtyByTh = new Map<number, number>()
+  for (const line of parsed.lines) {
+    const t = Math.round(line.aMm)
+    sumMainQtyByTh.set(t, (sumMainQtyByTh.get(t) ?? 0) + line.qty)
+  }
+
+  const circByTh = new Map(
+    (task.plan?.circular ?? []).map((c) => [Math.round(c.thicknessMm), c] as const),
+  )
+  const circThicknesses = new Set(circByTh.keys())
+
+  const openSecondaryWidthsByT = new Map<number, number[]>()
+  const dimRows = dimensionRowsForTask(task)
+
+  if (dimRows?.length) {
+    const addSecondaryDemand = (T: number, Wm: number, q: number) => {
+      if (q <= 0) return
+      const key = rowKey(T, Wm)
+      const existedBefore = demand.has(key)
+      const prev = demand.get(key)
+      if (prev) prev.qtyNeeded += q
+      else demand.set(key, { thicknessMm: T, widthMm: Wm, qtyNeeded: q })
+      if (!existedBefore && !keysFromOrderText.has(key)) secondaryKeys.add(key)
+    }
+
+    /** Рядок таблиці навіть при qty=0 (потім «Треба» дожміть зі складу або мін. 1). */
+    const ensureSecondaryBrusSlot = (T: number, Wm: number) => {
+      const key = rowKey(T, Wm)
+      if (!demand.has(key)) {
+        demand.set(key, { thicknessMm: T, widthMm: Wm, qtyNeeded: 0 })
+      }
+      if (!keysFromOrderText.has(key)) secondaryKeys.add(key)
+    }
+
+    const stripStockThicknessWithRemainder = new Set(
+      stripStockRowsForTask(task)
+        .filter((s) => s.remainder > 0)
+        .map((s) => s.thicknessMm),
+    )
+
+    for (const r of dimRows) {
+      const qtyEmpty = !String(r.qty ?? '').trim()
+      if (r.kind !== 'secondary' && !qtyEmpty) continue
+      const cs = crossSectionMmFromDimensionRow(r, unit)
+      if (!cs) continue
+
+      const bl = boardCrossAndLengthFromDimensionRow(r, unit)
+      const lengthMm = bl != null ? Math.round(bl.lengthMm) : 0
+      const syn: OrderLine = { qty: 1, aMm: cs.aMm, bMm: cs.bMm, lengthMm }
+
+      const Ta = Math.round(cs.aMm)
+      const Tb = Math.round(cs.bMm)
+      const pickStripThickness = (): number | null => {
+        const hiA = circThicknesses.has(Ta)
+        const hiB = circThicknesses.has(Tb)
+        if (hiA && !hiB) return Ta
+        if (hiB && !hiA) return Tb
+        if (hiA && hiB) return Math.min(Ta, Tb)
+        if (stripStockThicknessWithRemainder.has(Ta) && !stripStockThicknessWithRemainder.has(Tb)) {
+          return Ta
+        }
+        if (stripStockThicknessWithRemainder.has(Tb) && !stripStockThicknessWithRemainder.has(Ta)) {
+          return Tb
+        }
+        if (stripStockThicknessWithRemainder.has(Ta) && stripStockThicknessWithRemainder.has(Tb)) {
+          return Math.min(Ta, Tb)
+        }
+        if (Ta > 0 && Tb > 0) {
+          for (const c of [Ta, Tb, Math.min(Ta, Tb), Math.max(Ta, Tb)]) {
+            if (c > 0 && circThicknesses.has(c)) return c
+          }
+          return null
+        }
+        if (Ta > 0 && circThicknesses.has(Ta)) return Ta
+        if (Tb > 0 && circThicknesses.has(Tb)) return Tb
+        return null
+      }
+      const T = pickStripThickness()
+      if (T == null || T <= 0) continue
+      const wAcross = boardWidthAcrossStripForThickness(syn, T)
+      if (wAcross == null) continue
+      const Wm = Math.round(wAcross)
+      if (Wm <= 0) continue
+
+      const pq = String(r.qty ?? '').trim()
+      if (pq !== '') {
+        const qn = Math.round(Number(pq.replace(',', '.')))
+        if (Number.isFinite(qn) && qn > 0) addSecondaryDemand(T, Wm, qn)
+        continue
+      }
+
+      const list = openSecondaryWidthsByT.get(T) ?? []
+      list.push(Wm)
+      openSecondaryWidthsByT.set(T, list)
+    }
+
+    for (const [T, widths] of openSecondaryWidthsByT) {
+      const circ = circByTh.get(T)
+      const sumMain = sumMainQtyByTh.get(T) ?? 0
+      const sink = Math.max(0, Math.round(circ?.qtyNeeded ?? 0) - sumMain)
+      const amounts = distributeSinkAcrossOpenSecondaries(sink, widths.length)
+      for (let i = 0; i < widths.length; i += 1) {
+        addSecondaryDemand(T, widths[i]!, amounts[i] ?? 0)
+      }
+      for (const Wm of widths) {
+        ensureSecondaryBrusSlot(T, Wm)
+      }
+    }
   }
 
   const explicitDone = new Map<string, number>()
@@ -88,23 +224,38 @@ function buildBrusRows(task: WorkTask): BrusRow[] {
 
   return rows
     .map((row) => {
-      const explicit = explicitDone.get(rowKey(row.thicknessMm, row.widthMm)) ?? 0
+      const rk = rowKey(row.thicknessMm, row.widthMm)
+      const explicit = explicitDone.get(rk) ?? 0
       const unallocated = unallocatedDoneByThickness.get(row.thicknessMm) ?? 0
-      const allocated = Math.min(Math.max(0, row.qtyNeeded - explicit), unallocated)
+      let qtyNeeded = row.qtyNeeded
+      const stock = stockByThickness.get(row.thicknessMm)
+      const boardsPerStripVal = boardsPerStrip(
+        stock?.undressedStripWidthMm ?? null,
+        row.widthMm,
+        task.kerfCircMm,
+      )
+      if (secondaryKeys.has(rk) && qtyNeeded <= 0 && (stock?.remainder ?? 0) > 0) {
+        qtyNeeded = Math.max(qtyNeeded, (stock?.remainder ?? 0) * boardsPerStripVal)
+      }
+      if (secondaryKeys.has(rk) && qtyNeeded <= 0) {
+        qtyNeeded = 1
+      }
+      const allocated = Math.min(Math.max(0, qtyNeeded - explicit), unallocated)
       unallocatedDoneByThickness.set(row.thicknessMm, Math.max(0, unallocated - allocated))
       const qtyDone = explicit + allocated
-      const left = Math.max(0, row.qtyNeeded - qtyDone)
-      const stock = stockByThickness.get(row.thicknessMm)
+      const left = Math.max(0, qtyNeeded - qtyDone)
       return {
         ...row,
-        key: rowKey(row.thicknessMm, row.widthMm),
+        qtyNeeded,
+        key: rk,
         qtyDone,
         left,
         stripRemainder: stock?.remainder ?? 0,
-        boardsPerStrip: boardsPerStrip(stock?.undressedStripWidthMm ?? null, row.widthMm, task.kerfCircMm),
+        boardsPerStrip: boardsPerStripVal,
+        isSecondary: secondaryKeys.has(rk),
       }
     })
-    .filter((row) => row.left > 0)
+    .filter((row) => row.left > 0 || (row.isSecondary && row.stripRemainder > 0))
 }
 
 export function StripSawPage() {
@@ -282,6 +433,15 @@ export function StripSawPage() {
                       <strong>
                         {fmtMm(row.thicknessMm)} × {fmtMm(row.widthMm)}
                       </strong>
+                      {row.isSecondary ? (
+                        <span
+                          className="stripRowSecondaryBadge"
+                          title="Побічний розмір з форми бригадира (рядок без кількості в тексті або побічний)"
+                        >
+                          {' '}
+                          побічний
+                        </span>
+                      ) : null}
                     </td>
                     <td data-label="Треба">{row.qtyNeeded}</td>
                     <td data-label="Зроблено">{row.qtyDone}</td>

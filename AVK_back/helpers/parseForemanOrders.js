@@ -17,7 +17,18 @@ function secondCrossSectionMm(firstRaw, secondRaw, lineUnit, taskUnitDefault) {
   return wIfSameUnit
 }
 
-function mergeOrderLines(lines) {
+export function crossSectionMmFromDimensionRow(r, unitDefault) {
+  const source = r && typeof r === 'object' ? r : {}
+  const rawH = Number(String(source.height ?? '').replace(',', '.'))
+  const rawW = Number(String(source.width ?? '').replace(',', '.'))
+  if (!Number.isFinite(rawH) || !Number.isFinite(rawW)) return null
+  const aMm = toMm(rawH, unitDefault)
+  const bMm = secondCrossSectionMm(rawH, rawW, unitDefault, unitDefault)
+  if (!Number.isFinite(aMm) || !Number.isFinite(bMm) || aMm <= 0 || bMm <= 0) return null
+  return { aMm, bMm }
+}
+
+export function mergeOrderLines(lines) {
   const map = new Map()
   for (const l of lines) {
     const aMm = Math.round(l.aMm)
@@ -92,4 +103,32 @@ export function parseForemanOrderText(raw, unitDefault) {
   }
 
   return { ok: true, lines: mergeOrderLines(result) }
+}
+
+/** Порожнє замовлення допустиме, якщо попит лише в dimensionRows. */
+export function parseForemanOrderTextOrEmpty(raw, unitDefault) {
+  if (!String(raw ?? '').trim()) return { ok: true, lines: [] }
+  return parseForemanOrderText(raw, unitDefault)
+}
+
+/**
+ * Товщини смуг (мм), дозволені для додаткового списання на стрічковій пилі за побічними рядками
+ * (з кількістю або без): обидві сторони перетину з `crossSectionMmFromDimensionRow`.
+ */
+export function adHocBandThicknessesFromDimensionRows(dimensionRows, unit) {
+  const u = unit === 'cm' ? 'cm' : 'mm'
+  const set = new Set()
+  if (!Array.isArray(dimensionRows)) return set
+  for (const r of dimensionRows) {
+    if (!r) continue
+    const qtyEmpty = !String(r.qty ?? '').trim()
+    if (r.kind !== 'secondary' && !qtyEmpty) continue
+    const cs = crossSectionMmFromDimensionRow(r, u)
+    if (!cs) continue
+    const a = Math.round(cs.aMm)
+    const b = Math.round(cs.bMm)
+    if (a > 0) set.add(a)
+    if (b > 0) set.add(b)
+  }
+  return set
 }

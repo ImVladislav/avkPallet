@@ -81,6 +81,7 @@ export type TaskStationAssignments = {
 
 export type TaskDimensionRow = {
   kind: 'main' | 'secondary'
+  /** Для `secondary` може бути порожнім: рядок лише в `dimensionRows`, без фіксованого попиту в плані. */
   qty: string
   height: string
   width: string
@@ -104,7 +105,7 @@ export type WorkTask = {
   assignTo: string[]
   /** Персональні призначення: ID працівників по кожному станку/ділянці. */
   stationAssignments?: TaskStationAssignments
-  plan: ForemanPlanResult
+  plan: ForemanPlanResult & { dimensionRows?: TaskDimensionRow[] }
   /** Накопичені смуги по завданню (передаються на багатопил). */
   stripInventory?: StripInventoryEntry[]
   /** Списані смуги на багатопилі та ручний залишок. */

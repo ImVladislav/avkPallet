@@ -1,6 +1,9 @@
 import type { WorkTask } from '../types/task'
 import type { OrderLine } from './parseForemanOrders'
-import { orderLengthMmForThicknessAndBoardWidth } from './parseForemanOrders'
+import {
+  orderLengthMmForThicknessAndBoardWidth,
+  orderLengthMmFromDimensionRows,
+} from './parseForemanOrders'
 
 export type TaskBoardFromInventoryRow = {
   id: string
@@ -95,6 +98,7 @@ export function boardsFromTaskStripCuts(
   )
   if (cuts.length === 0) return []
 
+  const unit: 'mm' | 'cm' = task.unit === 'cm' ? 'cm' : 'mm'
   const queueByTh = buildInitialStripQueues(task)
   const out: TaskBoardFromInventoryRow[] = []
   let n = 0
@@ -140,12 +144,16 @@ export function boardsFromTaskStripCuts(
           orderLines && orderLines.length > 0
             ? orderLengthMmForThicknessAndBoardWidth(orderLines, th, bucket.w)
             : null
+        const orderResolved =
+          orderL ??
+          orderLengthMmFromDimensionRows(task.dimensionRows, unit, th, bucket.w) ??
+          (primaryLen > 0 ? primaryLen : null)
         out.push({
           id: `${cut.recordedAt}-${ci}-${bucket.w}-${i}`,
           n,
           thicknessMm: th,
           widthMm: bucket.w,
-          orderLengthMm: orderL,
+          orderLengthMm: orderResolved,
           stripFactLengthsMm: stripLens,
           stripLengthsLabel: stripLabel,
           stripLengthPrimaryMm: primaryLen,

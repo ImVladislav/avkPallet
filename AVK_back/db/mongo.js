@@ -1,7 +1,20 @@
+import dns from 'node:dns'
 import mongoose from 'mongoose'
-import { MONGODB_URI } from '../config/env.js'
+import { MONGODB_DUAL_STACK, MONGODB_FORCE_IPV4, MONGODB_URI } from '../config/env.js'
 
 let connectPromise = null
+
+/** Atlas + Node (особливо 18+) на Windows часто ламаються через happy-eyeballs/IPv6 → TLS alert internal error. */
+const useAtlasSocketWorkaround =
+  !MONGODB_DUAL_STACK && (process.platform === 'win32' || MONGODB_FORCE_IPV4)
+
+if (useAtlasSocketWorkaround) {
+  try {
+    dns.setDefaultResultOrder('ipv4first')
+  } catch {
+    // старий Node без цього API
+  }
+}
 
 function normalizeMongoUri(raw) {
   const src = String(raw ?? '').trim()
@@ -23,6 +36,7 @@ export async function connectMongo() {
   }
   connectPromise = mongoose.connect(uri, {
     serverSelectionTimeoutMS: 10000,
+    ...(useAtlasSocketWorkaround ? { family: 4, autoSelectFamily: false } : {}),
   })
   try {
     await connectPromise
