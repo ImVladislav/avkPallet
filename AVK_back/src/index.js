@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { createApp } from './app.js'
 import { PORT } from '../config/env.js'
 import { ensureSeedUsers } from '../helpers/seedUsers.js'
@@ -11,13 +12,26 @@ async function main() {
     await ensureSeedUsers()
 
     const app = createApp()
-    app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`API listening on 0.0.0.0:${PORT}  (health: /health, api: /api)`)
       console.log('Сховище: MongoDB (users, tasks, roundwood_state)')
     })
+    server.on('error', (err) => {
+      try {
+        fs.writeSync(2, `[avk-pallet] HTTP server error: ${err?.stack || err}\n`)
+      } catch {
+        console.error(err)
+      }
+      process.exit(1)
+    })
   } catch (err) {
-    console.error('FATAL: не вдалося запустити сервер')
-    console.error(err)
+    const text = `[avk-pallet] FATAL: не вдалося запустити сервер\n${err?.stack || err}\n`
+    try {
+      fs.writeSync(2, text)
+    } catch {
+      console.error('FATAL: не вдалося запустити сервер')
+      console.error(err)
+    }
     process.exit(1)
   }
 }
