@@ -17,9 +17,39 @@ if (isRunDirectly) {
   process.exit(1)
 }
 
+function buildCorsOptions() {
+  const extra = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  return {
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true)
+        return
+      }
+      if (extra.length === 0) {
+        callback(null, true)
+        return
+      }
+      if (extra.includes(origin)) {
+        callback(null, true)
+        return
+      }
+      callback(null, false)
+    },
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
+  }
+}
+
 export function createApp() {
   const app = express()
-  app.use(cors({ origin: true, credentials: true }))
+  app.set('trust proxy', 1)
+  app.use(cors(buildCorsOptions()))
   app.use(express.json())
 
   app.get('/health', (_req, res) => {

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { firstAllowedPath } from '../routes/paths'
 import './Login.css'
@@ -60,9 +60,8 @@ export function Login() {
             {busy ? 'Вхід…' : 'Увійти'}
           </button>
         </form>
-        <p className="loginHint">
-          Тестові акаунти (пароль <b>1</b>): rozpyl (стрічкова пила), cyrkul (циркулярка), zbirka,{' '}
-          <strong>brygadyr</strong> (бригадир, розділ «Завдання» на <code>/tasks</code>), admin
+        <p className="loginHelpLink">
+          <Link to="/help">Довідка та тестові акаунти</Link>
         </p>
       </div>
     </div>

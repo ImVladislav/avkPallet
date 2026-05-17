@@ -7,6 +7,9 @@
     <title>avk-pallet</title>
     <script>
       ;(function redirectFromGithubPages404(location) {
+        const host = location.hostname
+        const onGithubPages = host === 'github.io' || host.endsWith('.github.io')
+        if (!onGithubPages) return
         if (!location.search.startsWith('?/')) return
         const decoded = location.search
           .slice(2)

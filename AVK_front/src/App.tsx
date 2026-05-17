@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { Login } from './components/Login'
 import { AppLayout } from './components/layout/AppLayout'
 import { useAuth } from './context/AuthContext'
+import { HelpPage } from './pages/HelpPage'
 import { BoardsPage } from './pages/BoardsPage'
 import { BandSawPage } from './pages/BandSawPage'
 import { CircularSawPage } from './pages/CircularSawPage'
@@ -56,6 +57,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="/help" element={<HelpPage />} />
       <Route path="/login" element={<LoginRoute />} />
       <Route element={<RequireUser />}>
         <Route element={<AppLayout />}>

@@ -1,0 +1,44 @@
+.helpCard {
+  max-width: 520px;
+}
+
+.helpSection {
+  margin-top: 1.25rem;
+  text-align: left;
+}
+
+.helpSection h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: #2d2116;
+}
+
+.helpSection p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #4a3728;
+  line-height: 1.45;
+}
+
+.helpList {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: #3e2915;
+  line-height: 1.55;
+}
+
+.helpList code {
+  font-size: 0.85em;
+  background: rgba(106, 74, 45, 0.12);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.helpHint code {
+  font-size: 0.82em;
+  background: rgba(106, 74, 45, 0.12);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  word-break: break-all;
+}
