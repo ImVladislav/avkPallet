@@ -411,6 +411,7 @@ export function CircularSawPage() {
         </header>
 
         {tasksErr && <p className="birkaMsgErr">{tasksErr}</p>}
+        {err && !tasksErr && <p className="birkaMsgErr">{err}</p>}
         {!tasksErr && tasksForCircular.length === 0 && (
           <p className="panelHint circularSawOnlyCircularHint">
             Немає завдань з призначенням «Станок 2 / циркулярка». Бригадир додає його в ланцюг на сторінці
@@ -446,7 +447,7 @@ export function CircularSawPage() {
         {msg && (
           <div className="circularOkBlock" role="status">
             <p className="circularOkMsg">{msg}</p>
-            {canUndoLastCircularCut ? (
+            {canUndoLastCircularCut && lastCircularCut ? (
               <div className="circularUndoRow">
                 <button
                   type="button"

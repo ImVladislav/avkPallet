@@ -12,6 +12,7 @@ export type UserAccessTab =
   | 'pallets'
   | 'boards'
   | 'users'
+  | 'salary'
 
 export type ManagedUser = AuthUser & {
   password?: string
