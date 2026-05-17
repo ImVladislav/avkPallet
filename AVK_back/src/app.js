@@ -17,10 +17,31 @@ if (isRunDirectly) {
   process.exit(1)
 }
 
+function normalizeOriginUrl(origin) {
+  if (!origin || typeof origin !== 'string') return ''
+  const t = origin.trim().replace(/\/$/, '')
+  try {
+    const u = new URL(t)
+    return `${u.protocol}//${u.host}`.toLowerCase()
+  } catch {
+    return t.toLowerCase()
+  }
+}
+
+/** Чи це деплой на Vercel (прод або preview *.vercel.app). */
+function isVercelPreviewOrigin(origin) {
+  try {
+    const host = new URL(origin).hostname.toLowerCase()
+    return host.endsWith('.vercel.app')
+  } catch {
+    return false
+  }
+}
+
 function buildCorsOptions() {
-  const extra = (process.env.CORS_ORIGINS ?? '')
+  const configured = (process.env.CORS_ORIGINS ?? '')
     .split(',')
-    .map((s) => s.trim())
+    .map((s) => normalizeOriginUrl(s))
     .filter(Boolean)
 
   return {
@@ -29,11 +50,16 @@ function buildCorsOptions() {
         callback(null, true)
         return
       }
-      if (extra.length === 0) {
+      if (configured.length === 0) {
         callback(null, true)
         return
       }
-      if (extra.includes(origin)) {
+      const normalized = normalizeOriginUrl(origin)
+      if (configured.includes(normalized)) {
+        callback(null, true)
+        return
+      }
+      if (isVercelPreviewOrigin(origin)) {
         callback(null, true)
         return
       }
